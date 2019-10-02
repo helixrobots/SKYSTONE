@@ -55,21 +55,22 @@ public class AshrayBasicOpMode_Iterative extends OpMode
     @Override
     public void start() {
         runtime.reset();
-        serv1.setPosition(0.0);
-        serv2.setPosition(0.0);
     }
 
 
     @Override
     public void loop() {
-
-
-
-
+        if(gamepad2.a){
+            serv1.resetDeviceConfigurationForOpMode();
+            serv2.resetDeviceConfigurationForOpMode();
+            serv1.setDirection(Servo.Direction.FORWARD);
+            serv2.setDirection(Servo.Direction.REVERSE);
+        }
 
         telemetry.addData("Servo1 Position", serv1.getPosition());
         telemetry.addData("Servo2 Position", serv2.getPosition());
         telemetry.update();
+
         double drive       =  -gamepad1.left_stick_y;
         double turn        =  -gamepad1.right_stick_x/1.5;
         double armPower    =  -gamepad2.right_stick_y/1.75;
