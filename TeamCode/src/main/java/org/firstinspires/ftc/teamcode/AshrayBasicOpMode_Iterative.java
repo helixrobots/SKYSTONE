@@ -34,7 +34,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode
         serv1       = hardwareMap.get(Servo.class, "s1");
         serv2       = hardwareMap.get(Servo.class, "s2");
 
-        serv1.setPosition(0.0);
+        serv1.setPosition(0.25);
         serv2.setPosition(0.0);
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
