@@ -1,10 +1,8 @@
 package com.helix.appl.simulation;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import com.helix.appl.simulation.Servo;
 import com.helix.lib.utils.Conversions;
 
 
@@ -56,16 +54,16 @@ public class Arm {
                 new Servo(), 0.0, false, 12.0);
     }
 
-    public void setArmPosition(double position0, double position1, double position2) {
+    public void setTargetArmPosition(double position0, double position1, double position2) {
         myServo0.setPosition(position0);
         myServo1.setPosition(position1);
         myServo2.setPosition(position2);
     }
 
-    public void setArmPositionByAnglesInDegrees(double angle0, double angle1, double angle2) {
-        myServo0.setPositionInDegrees(angle0);
-        myServo1.setPositionInDegrees(angle1);
-        myServo2.setPositionInDegrees(angle2);
+    public void setTargetArmPositionByAnglesInDegrees(double angle0, double angle1, double angle2) {
+        myServo0.setTargetPositionInDegrees(angle0);
+        myServo1.setTargetPositionInDegrees(angle1);
+        myServo2.setTargetPositionInDegrees(angle2);
     }
 
     public Servo getServo(int i) {
@@ -81,12 +79,20 @@ public class Arm {
         }
     }
 
-    public double getServoPosition(int i) {
-        return getServo(i).getPosition();
+    protected double getServoCurrentPosition(int i) {
+        return getServo(i).getCurrentPosition();
     }
 
-    public double getServoPositionInDegrees(int i) {
-        return getServo(i).getPositionInDegrees();
+    public double getServoTargetPosition(int i) {
+        return getServo(i).getTargetPosition();
+    }
+
+    protected double getServoCurrentPositionInDegrees(int i) {
+        return getServo(i).getCurrentPositionInDegrees();
+    }
+
+    public double getServoTargetPositionInDegrees(int i) {
+        return getServo(i).getTargetPositionInDegrees();
     }
 
     public double getArmLength(int i) {
@@ -102,11 +108,11 @@ public class Arm {
         }
     }
 
-    public ArrayList<Point2D> getArmPoints() {
+    protected ArrayList<Point2D> getCurrentArmPoints() {
         ArrayList<Point2D> points = new ArrayList<Point2D>();
         Point2D curPoint = new Point2D.Double(0.0, 0.0);
         points.add(curPoint);
-        double degreesRelativeToHorizontal0 = myServo0.getPositionInDegrees() + 90 + myServoOrientation0;
+        double degreesRelativeToHorizontal0 = myServo0.getCurrentPositionInDegrees() + 90 + myServoOrientation0;
         double radiansRelativeToHorizontal0 = Conversions.degreesToRadians(degreesRelativeToHorizontal0);
         // System.out.format("%f %f %f\n", myServo0.getPosition(), myServo0.getPositionInDegrees(), myServoOrientation0);
         // System.out.println(degreesRelativeToHorizontal0);
@@ -115,7 +121,7 @@ public class Arm {
                 curPoint.getY() + Math.sin(radiansRelativeToHorizontal0) * myArmLength0);
         // System.out.println(curPoint);
         points.add(curPoint);
-        double degreesRelativeToHorizontal1 = myServo1.getPositionInDegrees() + degreesRelativeToHorizontal0 + myServoOrientation1;
+        double degreesRelativeToHorizontal1 = myServo1.getCurrentPositionInDegrees() + degreesRelativeToHorizontal0 + myServoOrientation1;
         double radiansRelativeToHorizontal1 = Conversions.degreesToRadians(degreesRelativeToHorizontal1);
         // System.out.println(degreesRelativeToHorizontal1);
         curPoint = new Point2D.Double(
@@ -123,7 +129,40 @@ public class Arm {
                 curPoint.getY() + Math.sin(radiansRelativeToHorizontal1) * myArmLength1);
         // System.out.println(curPoint);
         points.add(curPoint);
-        double degreesRelativeToHorizontal2 = myServo2.getPositionInDegrees() + degreesRelativeToHorizontal1 + myServoOrientation2;
+        double degreesRelativeToHorizontal2 = myServo2.getCurrentPositionInDegrees() + degreesRelativeToHorizontal1 + myServoOrientation2;
+        double radiansRelativeToHorizontal2 = Conversions.degreesToRadians(degreesRelativeToHorizontal2);
+        // System.out.println(degreesRelativeToHorizontal2);
+
+        curPoint = new Point2D.Double(
+                curPoint.getX() + Math.cos(radiansRelativeToHorizontal2) * myArmLength2,
+                curPoint.getY() + Math.sin(radiansRelativeToHorizontal2) * myArmLength2);
+        // System.out.println(curPoint);
+        points.add(curPoint);
+        return points;
+    }
+
+    public ArrayList<Point2D> getTargetArmPoints() {
+        ArrayList<Point2D> points = new ArrayList<Point2D>();
+        Point2D curPoint = new Point2D.Double(0.0, 0.0);
+        points.add(curPoint);
+        double degreesRelativeToHorizontal0 = myServo0.getTargetPositionInDegrees() + 90 + myServoOrientation0;
+        double radiansRelativeToHorizontal0 = Conversions.degreesToRadians(degreesRelativeToHorizontal0);
+        // System.out.format("%f %f %f\n", myServo0.getPosition(), myServo0.getPositionInDegrees(), myServoOrientation0);
+        // System.out.println(degreesRelativeToHorizontal0);
+        curPoint = new Point2D.Double(
+                curPoint.getX() + Math.cos(radiansRelativeToHorizontal0) * myArmLength0,
+                curPoint.getY() + Math.sin(radiansRelativeToHorizontal0) * myArmLength0);
+        // System.out.println(curPoint);
+        points.add(curPoint);
+        double degreesRelativeToHorizontal1 = myServo1.getTargetPositionInDegrees() + degreesRelativeToHorizontal0 + myServoOrientation1;
+        double radiansRelativeToHorizontal1 = Conversions.degreesToRadians(degreesRelativeToHorizontal1);
+        // System.out.println(degreesRelativeToHorizontal1);
+        curPoint = new Point2D.Double(
+                curPoint.getX() + Math.cos(radiansRelativeToHorizontal1) * myArmLength1,
+                curPoint.getY() + Math.sin(radiansRelativeToHorizontal1) * myArmLength1);
+        // System.out.println(curPoint);
+        points.add(curPoint);
+        double degreesRelativeToHorizontal2 = myServo2.getTargetPositionInDegrees() + degreesRelativeToHorizontal1 + myServoOrientation2;
         double radiansRelativeToHorizontal2 = Conversions.degreesToRadians(degreesRelativeToHorizontal2);
         // System.out.println(degreesRelativeToHorizontal2);
 

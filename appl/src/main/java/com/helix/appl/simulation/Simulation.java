@@ -45,9 +45,9 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         myFrame.add(this);
         myFrame.setVisible(true);
         myArm = new Arm();
-        myArm.getServo(0).setMaxAngularSpeed(0.2);
-        myArm.getServo(1).setMaxAngularSpeed(0.2);
-        myArm.getServo(2).setMaxAngularSpeed(0.1);
+        myArm.getServo(0).setMaxAngularSpeed(1.0);
+        myArm.getServo(1).setMaxAngularSpeed(1.0);
+        myArm.getServo(2).setMaxAngularSpeed(1.0);
         myTrail = new ArrayList<Point2D>();
         // myFrame.addKeyListener(this);
         addKeyListener(this);
@@ -76,7 +76,7 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
     }
 
     public void paint(Graphics g){
-        List<Point2D> armPoints = myArm.getArmPoints();
+        List<Point2D> armPoints = myArm.getCurrentArmPoints();
 
         // Joystick circle
         Rectangle bounds = myFrame.getBounds();
@@ -107,6 +107,9 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
                        diameter);
             // Save this point to the list of arm endpoints
             myTrail.add(point1);
+        }
+        while (myTrail.size() > 10000) {
+            myTrail.remove(0);
         }
 
         g.drawLine(myPos, myPos, myPos + 100, myPos + 100);
@@ -163,12 +166,16 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         System.out.println("Got " + Character.toString(c));
         if (!myCtrlPressed && !myOptionPressed && !myCommandPressed) {
             switch (c) {
-                case 'a': myArm.setArmPosition(0.1, 0.1, 0.5);
-                          break;
-                case 'b': myArm.setArmPosition(0.5, 0.5, 0.5);
-                          break;
+                case 'a': myArm.setTargetArmPosition(0.1, 0.1, 0.5);
+                    break;
+                case 'b': myArm.setTargetArmPosition(0.5, 0.5, 0.5);
+                    break;
                 case 'c': clearTrail();
                           break;
+                case 'd': myArm.setTargetArmPosition(5.0 / 6.0, 0.5, 0.5);
+                    break;
+                case 'f': myArm.setTargetArmPosition(1.0 / 6.0, 0.5, 0.5);
+                    break;
             }
         }
     }

@@ -31,21 +31,27 @@ public class Servo {
         this(0.5, 0.0, 1.0);
     }
 
-    public static void main() {
-        Servo s = new Servo();
+    public double getPosition() {
+        // This attempts to replicate the behavior of the actual physical servo, which returns
+        // the last position to which the servo was commanded to move.  The method is unfortunately
+        // named, but we keep it this way to be consistent with the physical servo's API.
+        return myTargetPosition;
     }
 
-    public double getPosition() {
+    protected double getCurrentPosition() {
         return myPosition;
     }
 
-    public double getPositionInDegrees() {
-        return getPosition() * 270 - 135;
+    protected double getTargetPosition() {
+        return getPosition();
     }
 
-    private void setCurrentPosition(double position) {
-        assert position >= 0.0 && position <= 1.0;
-        myPosition = position;
+    protected double getCurrentPositionInDegrees() {
+        return getCurrentPosition() * 270 - 135;
+    }
+
+    protected double getTargetPositionInDegrees() {
+        return getTargetPosition() * 270 - 135;
     }
 
     // Methods to set the position of the servo.  The names of these methods may be slightly
@@ -54,10 +60,21 @@ public class Servo {
     // when update is called.
 
     public void setPosition(double position) {
+        assert position >= 0.0 && position <= 1.0;    // Enforce this because we don't really know
+                                                      // how the actual servos will react.
         myTargetPosition = Math.min(Math.max(position, myLowerLimit), myUpperLimit);
     }
 
-    public void setPositionInDegrees(double positionInDegrees) {
+    private void setCurrentPosition(double position) {
+        assert position >= 0.0 && position <= 1.0;
+        myPosition = position;
+    }
+
+    protected void setTargetPosition(double position) {
+        setPosition(position);
+    }
+
+    protected void setTargetPositionInDegrees(double positionInDegrees) {
         setPosition((positionInDegrees + 135) / 270.0);
     }
 
@@ -67,6 +84,11 @@ public class Servo {
     }
 
     public void update(double timeInSeconds) {
+        /*
+        System.out.format("Servo data");
+        System.out.format("Target and real position: %s %s\n", myTargetPosition, myPosition);
+        System.out.format("Max angular speed: %s\n", myMaxAngularSpeed);
+        */
         double delta = myTargetPosition - myPosition;
         double myAngularVelocity = Math.copySign(Math.min(Math.abs(delta) / timeInSeconds, myMaxAngularSpeed), delta);
         setCurrentPosition(myPosition + myAngularVelocity * timeInSeconds);

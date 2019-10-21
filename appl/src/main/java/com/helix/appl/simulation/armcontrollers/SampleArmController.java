@@ -41,10 +41,10 @@ public class SampleArmController implements ArmController {
                                                               double gripperBaseY) {
         double r_squared = gripperBaseX * gripperBaseX + gripperBaseY * gripperBaseY;
 
-        double middleServoAngleInDegrees = 180 - Math.toDegrees(Math.acos((
+        double middleServoAngleInDegrees = -(180 - Math.toDegrees(Math.acos((
                 BASE_ARM_LENGTH_IN_INCH * BASE_ARM_LENGTH_IN_INCH
                         + END_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH - r_squared)
-                / (2 * BASE_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH)));
+                / (2 * BASE_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH))));
 
         double angleXY = Math.toDegrees(Math.atan2(gripperBaseY, gripperBaseX));
 
@@ -62,13 +62,7 @@ public class SampleArmController implements ArmController {
                                                   double gripperBaseX,
                                                   double gripperBaseY,
                                                   double timeInSeconds) {
-        if (Math.abs(gamepad2_X) <= 0.1) {
-            gamepad2_Y = 0;
-        }
-        if (Math.abs(gamepad2_Y) <= 0.1) {
-            gamepad2_Y = 0;
-        }
-
+        System.out.format("JOYSTICK_TO_GRIPPER_POSITION_FACTOR: %s\n", JOYSTICK_TO_GRIPPER_POSITION_FACTOR);
         gripperBaseX = gripperBaseX + gamepad2_X * JOYSTICK_TO_GRIPPER_POSITION_FACTOR * timeInSeconds;
         gripperBaseY = gripperBaseY + gamepad2_Y * JOYSTICK_TO_GRIPPER_POSITION_FACTOR * timeInSeconds;
         return Arrays.asList(gripperBaseX, gripperBaseY);
@@ -77,26 +71,27 @@ public class SampleArmController implements ArmController {
 
     @Override
     public void setArmForXY(Arm arm, double controllerX, double controllerY, double timeInSeconds) {
-        double angle0 = arm.getServoPositionInDegrees(0);
-        double angle1 = arm.getServoPositionInDegrees(1);
-        double angle2 = arm.getServoPositionInDegrees(2);
-        if (Math.abs(controllerX) <= 0.1) {
+        double angle0 = arm.getServoTargetPositionInDegrees(0);
+        double angle1 = arm.getServoTargetPositionInDegrees(1);
+        double angle2 = arm.getServoTargetPositionInDegrees(2);
+        if (Math.abs(controllerX) <= 0.2) {
             controllerX = 0.0;
         }
-        if (Math.abs(controllerY) <= 0.1) {
+        if (Math.abs(controllerY) <= 0.2) {
             controllerY = 0.0;
         }
+        System.out.format("Joystick in setArmForXY: %s %s\n", controllerX, controllerY);
 
-        List<Double> armAngles2 = armServoPositionsToAnglesInDegree(arm.getServoPosition(0),
-                                                                    arm.getServoPosition(1));
+        List<Double> armAngles2 = armServoPositionsToAnglesInDegree(arm.getServoTargetPosition(0),
+                                                                    arm.getServoTargetPosition(1));
 
         System.out.format("Angles: %s %s\n", angle0, angle1);
         System.out.format("Angles2: %s %s\n", armAngles2.get(0), armAngles2.get(1));
         assert Math.abs(armAngles2.get(0) - (angle0 + 90)) < 1e-9;
         assert Math.abs(armAngles2.get(1) - angle1) < 1e-9;
 
-        System.out.format("Servo Position2: %s %s\n", arm.getServoPosition(0), arm.getServoPosition(1));
-        List<Point2D> armPoints = arm.getArmPoints();
+        System.out.format("Servo Target Position2: %s %s\n", arm.getServoTargetPosition(0), arm.getServoTargetPosition(1));
+        List<Point2D> armPoints = arm.getTargetArmPoints();
         Point2D tipPoint = armPoints.get(2);
         List<Double> tipPoint2 = getGripperBasePositionFromServoAngles(
                 armAngles2.get(0), armAngles2.get(1));
@@ -108,8 +103,8 @@ public class SampleArmController implements ArmController {
 
         List<Double> newGripperBasePosition = getNewGripperBasePosition(controllerX,
                                                                         controllerY,
-                                                                        tipPoint.getX(),
-                                                                        tipPoint.getY(),
+                                                                        tipPoint2.get(0),
+                                                                        tipPoint2.get(1),
                                                                         timeInSeconds);
 
         System.out.format("Target Tip2: %s %s\n", newGripperBasePosition.get(0), newGripperBasePosition.get(1));
@@ -119,13 +114,23 @@ public class SampleArmController implements ArmController {
 
         System.out.format("Target Servo Angles2: %s %s\n", newServoAngles.get(0), newServoAngles.get(1));
 
+        System.out.format("Arm lengths: %s %s\n", arm.getArmLength(0), arm.getArmLength(1));
+        double angleInRadians0 = Math.toRadians(newServoAngles.get(0));
+        double angleInRadians1 = Math.toRadians(newServoAngles.get(1));
+        double computedTargetX = Math.cos(angleInRadians0) * arm.getArmLength(0) +
+                Math.cos(angleInRadians0 + angleInRadians1) * arm.getArmLength(1);
+        double computedTargetY = Math.sin(angleInRadians0) * arm.getArmLength(0) +
+                Math.sin(angleInRadians0 + angleInRadians1) * arm.getArmLength(1);
+
+        System.out.format("Target XY From Target Servo Angles2: %s %s\n", computedTargetX, computedTargetY);
+
         List<Double> newServoPositions = anglesInDegreeToArmServoPositions(
                 newServoAngles.get(0), newServoAngles.get(1));
 
         System.out.format("Target Servo Positions2: %s %s\n", newServoPositions.get(0), newServoPositions.get(1));
 
-        arm.getServo(0).setPosition(newServoPositions.get(0));
-        arm.getServo(1).setPosition(newServoPositions.get(1));
+        arm.getServo(0).setPosition(Math.max(Math.min(newServoPositions.get(0), 1.0), 0.0));
+        arm.getServo(1).setPosition(Math.max(Math.min(newServoPositions.get(1), 1.0), 0.0));
 
         /*
         double angleXY = Math.atan2(tipPoint.getX(), tipPoint.getY());
