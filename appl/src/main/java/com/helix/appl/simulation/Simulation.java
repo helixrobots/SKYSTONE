@@ -1,6 +1,7 @@
 package com.helix.appl.simulation;
 
 import com.helix.appl.simulation.armcontrollers.ArmController;
+import com.helix.appl.simulation.armcontrollers.AshrayArmController;
 import com.helix.appl.simulation.armcontrollers.SampleArmController;
 
 import java.awt.Canvas;
@@ -34,6 +35,7 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
     double myJoystickX;
     double myJoystickY;
     ArmController myArmController = new SampleArmController();
+    // ArmController myArmController = new AshrayArmController();
 
     public Simulation() {
         myPos = 100;
