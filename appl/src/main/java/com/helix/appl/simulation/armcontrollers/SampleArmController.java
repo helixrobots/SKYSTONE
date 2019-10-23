@@ -8,6 +8,16 @@ import java.util.List;
 
 public class SampleArmController implements ArmController {
 
+    private final double BASE_ARM_LENGTH_IN_INCH;
+    private final double END_ARM_LENGTH_IN_INCH;
+    private double JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
+
+    public SampleArmController(Arm arm) {
+        BASE_ARM_LENGTH_IN_INCH = arm.getArmLength(0);
+        END_ARM_LENGTH_IN_INCH = arm.getArmLength(1);
+        JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
+    }
+
     private List<Double> armServoPositionsToAnglesInDegree(double baseServoPosition,
                                                            double middleServoPosition) {
         double baseServoAngleInDegrees = baseServoPosition * 270 - 45;
@@ -129,8 +139,15 @@ public class SampleArmController implements ArmController {
 
         System.out.format("Target Servo Positions2: %s %s\n", newServoPositions.get(0), newServoPositions.get(1));
 
-        arm.getServo(0).setPosition(Math.max(Math.min(newServoPositions.get(0), 1.0), 0.0));
-        arm.getServo(1).setPosition(Math.max(Math.min(newServoPositions.get(1), 1.0), 0.0));
+        if ((!Double.isNaN(newServoPositions.get(0))) &&
+            (!Double.isNaN(newServoPositions.get(1))) &&
+                (newServoPositions.get(0) >= 0.0) &&
+                (newServoPositions.get(1) <= 1.0) &&
+                (newServoPositions.get(1) >= 0.0) &&
+                (newServoPositions.get(1) <= 1.0)) {
+            arm.getServo(0).setPosition(Math.max(Math.min(newServoPositions.get(0), 1.0), 0.0));
+            arm.getServo(1).setPosition(Math.max(Math.min(newServoPositions.get(1), 1.0), 0.0));
+        }
 
         /*
         double angleXY = Math.atan2(tipPoint.getX(), tipPoint.getY());

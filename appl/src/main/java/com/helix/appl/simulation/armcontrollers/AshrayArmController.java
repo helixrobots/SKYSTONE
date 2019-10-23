@@ -12,6 +12,17 @@ public class AshrayArmController implements ArmController {
     final String ARM_CODE_HOLDING = "hold";
     final String ARM_CODE_REST = "rest";
 
+    final double BASE_ARM_LENGTH_IN_INCH;
+    final double END_ARM_LENGTH_IN_INCH;
+    final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
+
+
+    public AshrayArmController(Arm arm) {
+        BASE_ARM_LENGTH_IN_INCH = arm.getArmLength(0);
+        END_ARM_LENGTH_IN_INCH = arm.getArmLength(1);
+        JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
+    }
+
     private List<Double> armServoPositionsToAnglesInDegree(double baseServoPosition,
                                                            double middleServoPosition) {
         double baseServoAngleInDegrees = baseServoPosition * 270 - 45;

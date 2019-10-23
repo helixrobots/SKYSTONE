@@ -6,26 +6,27 @@ import java.util.ArrayList;
 
 public class Arm {
 
-    Servo myServo0;
-    Servo myServo1;
-    Servo myServo2;
-    double myServoOrientation0;     // Orientation relative to straight up, in degrees.  0.0 means
-                                    // position 0.5 on the servo is straight up.  90.0 means
-                                    // position 0.5 on the servo points to the left.
-    double myServoOrientation1;     // Orientation relative to continuing the previous arm segment.
-                                    // straight up, in degrees.  0.0 means position 0.5 on the
-                                    // keeps this segment as a straight continuation of the previous
-                                    // segment.
-    double myServoOrientation2;
-    boolean myServoReversed0;       // False if servo0 increases from 0.0 to 1.0 counterclockwise.
-    boolean myServoReversed1;       // False if servo1 increases from 0.0 to 1.0 counterclockwise.
-    boolean myServoReversed2;       // False if servo1 increases from 0.0 to 1.0 counterclockwise.
-    double myArmLength0;
-    double myArmLength1;
-    double myArmLength2;
+    private Servo myServo0;
+    private Servo myServo1;
+    private Servo myServo2;
+    private double myServoOrientation0;     // Orientation relative to straight up, in degrees.  0.0 means
+                                            // position 0.5 on the servo is straight up.  90.0 means
+                                            // position 0.5 on the servo points to the left.
+    private double myServoOrientation1;     // Orientation relative to continuing the previous arm segment.
+                                            // straight up, in degrees.  0.0 means position 0.5 on the
+                                            // keeps this segment as a straight continuation of the previous
+                                            // segment.
+    private double myServoOrientation2;
+    private boolean myServoReversed0;       // False if servo0 increases from 0.0 to 1.0 counterclockwise.
+    private boolean myServoReversed1;       // False if servo1 increases from 0.0 to 1.0 counterclockwise.
+    private boolean myServoReversed2;       // False if servo1 increases from 0.0 to 1.0 counterclockwise.
+    private double myArmLength0;
+    private double myArmLength1;
+    private double myArmLength2;
 
     public Arm(Servo servo0, double servoOrientation0, boolean servoReversed0, double armLength0,
-               Servo servo1, double servoOrientation1, boolean servoReversed1, double armLength1) {
+               Servo servo1, double servoOrientation1, boolean servoReversed1, double armLength1,
+               Servo servo2, double servoOrientation2, boolean servoReversed2, double armLength2) {
         myServo0 = servo0;
         myServoOrientation0 = servoOrientation0;
         myServoReversed0 = servoReversed0;
@@ -36,9 +37,17 @@ public class Arm {
         myArmLength1 = armLength1;
         // Arm three is currently a null arm.
         myServo2 = new Servo();
-        myServoOrientation2 = 0.0;
-        myServoReversed2 = false;
-        myArmLength2 = 0.0;
+        myServoOrientation2 = servoOrientation2;
+        myServoReversed2 = servoReversed2;
+        myArmLength2 = armLength2;
+    }
+
+    public Arm(Servo servo0, double servoOrientation0, boolean servoReversed0, double armLength0,
+               Servo servo1, double servoOrientation1, boolean servoReversed1, double armLength1) {
+        this(servo0, 0.0, false, armLength0,
+             servo1, 0.0, false, armLength1,
+             new Servo(), 0.0, false, 0.0);
+
     }
 
     public Arm(Servo servo0, double armLength0,
@@ -91,6 +100,19 @@ public class Arm {
 
     public double getServoTargetPositionInDegrees(int i) {
         return getServo(i).getTargetPositionInDegrees();
+    }
+
+    public double getServoOrientationInDegrees(int i) {
+        if (i == 0) {
+            return myServoOrientation0;
+        }
+        else if (i == 1) {
+            return myServoOrientation1;
+        }
+        else {
+            assert i == 2;
+            return myServoOrientation2;
+        }
     }
 
     public double getArmLength(int i) {

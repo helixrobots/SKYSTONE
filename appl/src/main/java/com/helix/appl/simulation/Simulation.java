@@ -34,8 +34,7 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
     int myJoystickCenterY = (int) (1025.0 - myJoystickDiameter * 1.5);
     double myJoystickX;
     double myJoystickY;
-    ArmController myArmController = new SampleArmController();
-    // ArmController myArmController = new AshrayArmController();
+    ArmController myArmController;
 
     public Simulation() {
         myPos = 100;
@@ -46,10 +45,14 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         myFrame.setLocationRelativeTo(null);
         myFrame.add(this);
         myFrame.setVisible(true);
-        myArm = new Arm();
+        myArm = new Arm(new Servo(), 0.0, false, 10.0,
+                        new Servo(), 0.0, false, 10.0,
+                        new Servo(), 0.0, false, 2.0);
         myArm.getServo(0).setMaxAngularSpeed(1.0);
         myArm.getServo(1).setMaxAngularSpeed(1.0);
         myArm.getServo(2).setMaxAngularSpeed(1.0);
+        myArmController = new SampleArmController(myArm);
+        // myArmController = new AshrayArmController(myArm);
         myTrail = new ArrayList<Point2D>();
         // myFrame.addKeyListener(this);
         addKeyListener(this);
