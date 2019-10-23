@@ -25,6 +25,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Servo armServoBase = null;
     private Servo armServoMiddle = null;
     private Servo gripperServoBase = null;
+    private Servo gripper = null;
     double leftPower;
     double rightPower;
     final String ARM_CODE_PICK_UP = "pick up";
@@ -157,6 +158,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         armServoBase = hardwareMap.get(Servo.class, "s1");
         armServoMiddle = hardwareMap.get(Servo.class, "s2");
         gripperServoBase = hardwareMap.get(Servo.class, "s3");
+        gripper = hardwareMap.get(Servo.class, "s4");
 
         // initialize motion motors
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -167,6 +169,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         // initialize arm position
         armPositions(ARM_CODE_HOLDING);
+        gripper.setPosition(0);
     }
 
 
@@ -194,6 +197,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     double armMiddleNewPosition = 0.5;
 
     private void armLoop() {
+        boolean gripperHold = false;
 
         if (gamepad2.a) {
             // button A
@@ -203,6 +207,19 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             // button B
             armPositions(ARM_CODE_HOLDING);
             return;
+        }
+
+        if(gamepad2.x) {
+            if(gripperHold == true){
+                gripperHold = false;
+            }else{
+                gripperHold = true;
+            }
+        }
+        if(gripperHold == false){
+            gripper.setPosition(0.5);
+        }else{
+            gripper.setPosition(1);
         }
 
         // logic for gripper base movement - x and y
@@ -238,18 +255,20 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         armBaseNewPosition = newServoPositions.get(0);
         armMiddleNewPosition = newServoPositions.get(1);
 
-        telemetry.addData("baseServoPosition", baseServoPosition);
-        telemetry.addData("middleServoPosition", middleServoPosition);
-        telemetry.addData("baseServoAngleInDegrees", baseServoAngleInDegrees);
-        telemetry.addData("middleServoAngleInDegrees", middleServoAngleInDegrees);
-        telemetry.addData("newBaseServoAngle", newBaseServoAngle);
-        telemetry.addData("newMiddleServoAngle", newMiddleServoAngle);
-        telemetry.addData("gripperBaseX", gripperBaseX);
-        telemetry.addData("gripperBaseY", gripperBaseY);
-        telemetry.addData("newGripperBaseX", newGripperBaseX);
-        telemetry.addData("newGripperBaseY", newGripperBaseY);
-        telemetry.addData("armBaseNewPosition", armBaseNewPosition);
-        telemetry.addData("armMiddleNewPosition", armMiddleNewPosition);
+//        telemetry.addData("baseServoPosition", baseServoPosition);
+//        telemetry.addData("middleServoPosition", middleServoPosition);
+//        telemetry.addData("baseServoAngleInDegrees", baseServoAngleInDegrees);
+//        telemetry.addData("middleServoAngleInDegrees", middleServoAngleInDegrees);
+//        telemetry.addData("newBaseServoAngle", newBaseServoAngle);
+//        telemetry.addData("newMiddleServoAngle", newMiddleServoAngle);
+//        telemetry.addData("gripperBaseX", gripperBaseX);
+//        telemetry.addData("gripperBaseY", gripperBaseY);
+//        telemetry.addData("newGripperBaseX", newGripperBaseX);
+//        telemetry.addData("newGripperBaseY", newGripperBaseY);
+//        telemetry.addData("armBaseNewPosition", armBaseNewPosition);
+//        telemetry.addData("armMiddleNewPosition", armMiddleNewPosition);
+        telemetry.addData("GripperBoolean", gripperHold);
+        telemetry.addData("Position", "("+newGripperBaseX+", "+ newGripperBaseY + ")");
         telemetry.update();
 
 //        if (armBaseNewPosition > 0.5) {
