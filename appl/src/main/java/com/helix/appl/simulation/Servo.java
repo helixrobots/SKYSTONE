@@ -1,7 +1,9 @@
 package com.helix.appl.simulation;
 
 
-public class Servo {
+import com.helix.lib.ftccomponentinterfaces.ServoInterface;
+
+public class Servo implements ServoInterface {
     double myPosition;            // Setting between 0.0 and 1.0
     double myTargetPosition;      // Setting between 0.0 and 1.0
     double myAngularVelocity;
@@ -38,6 +40,12 @@ public class Servo {
         return myTargetPosition;
     }
 
+    @Override
+    public void scaleRange(double min, double max) {
+        System.err.println("Servo.scaleRange not implemented.");
+        System.exit(1);
+    }
+
     protected double getCurrentPosition() {
         return myPosition;
     }
@@ -58,6 +66,19 @@ public class Servo {
     // misleading because the main one, setPosition, is named to match the API of the physical
     // servo.  These methods actually set a target position, which the servo moves towardd
     // when update is called.
+
+    @Override
+    public void setDirection(Direction direction) {
+        System.err.println("Servo.setDirection not implemented.");
+        System.exit(1);
+    }
+
+    @Override
+    public Direction getDirection() {
+        System.err.println("Servo.getDirection not implemented.");
+        System.exit(1);
+        return null;
+    }
 
     public void setPosition(double position) {
         assert position >= 0.0 && position <= 1.0;    // Enforce this because we don't really know
