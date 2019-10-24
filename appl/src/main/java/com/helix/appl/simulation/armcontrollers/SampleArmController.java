@@ -1,6 +1,8 @@
 package com.helix.appl.simulation.armcontrollers;
 
 import com.helix.appl.simulation.Arm;
+import com.helix.appl.simulation.Gamepad;
+import com.helix.lib.LibGamepad;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -11,11 +13,16 @@ public class SampleArmController implements ArmController {
     private final double BASE_ARM_LENGTH_IN_INCH;
     private final double END_ARM_LENGTH_IN_INCH;
     private double JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
+    private LibGamepad myGamepad1;
+    private LibGamepad myGamepad2;
 
-    public SampleArmController(Arm arm) {
+
+    public SampleArmController(Arm arm,  LibGamepad gamepad1, LibGamepad gamepad2) {
         BASE_ARM_LENGTH_IN_INCH = arm.getArmLength(0);
         END_ARM_LENGTH_IN_INCH = arm.getArmLength(1);
         JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
+        myGamepad1 = gamepad1;
+        myGamepad2 = gamepad2;
     }
 
     private List<Double> armServoPositionsToAnglesInDegree(double baseServoPosition,
@@ -80,7 +87,21 @@ public class SampleArmController implements ArmController {
 
 
     @Override
-    public void setArmForXY(Arm arm, double controllerX, double controllerY, double timeInSeconds) {
+    public void setTargetArmPosition(Arm arm, double position0, double position1, double position2) {
+        arm.setTargetArmPosition(position0, position1, position2);
+    }
+
+    @Override
+    public void setArmForXY(Arm arm, double timeInSeconds) {
+        if (myGamepad2.a) {
+            arm.setTargetArmPosition(0.25, 0.1, 0.25);
+        }
+        else  if (myGamepad2.b) {
+            arm.setTargetArmPosition(0.5, 0.5, 0.5);
+        }
+
+        double controllerX = myGamepad2.right_stick_x;
+        double controllerY = myGamepad2.right_stick_y;
         double angle0 = arm.getServoTargetPositionInDegrees(0);
         double angle1 = arm.getServoTargetPositionInDegrees(1);
         double angle2 = arm.getServoTargetPositionInDegrees(2);

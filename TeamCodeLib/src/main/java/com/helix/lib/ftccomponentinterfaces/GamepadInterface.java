@@ -4,22 +4,22 @@ public interface GamepadInterface {
     /**
      * left analog stick horizontal axis
      */
-    public float left_stick_x = 0f;
+    public float getLeftStickX();
 
     /**
      * left analog stick vertical axis
      */
-    public float left_stick_y = 0f;
+    public float getLeftStickY();
 
     /**
      * right analog stick horizontal axis
      */
-    public float right_stick_x = 0f;
+    public float getRightStickX();
 
     /**
      * right analog stick vertical axis
      */
-    public float right_stick_y = 0f;
+    public float getRightStickY();
 
     /**
      * dpad up

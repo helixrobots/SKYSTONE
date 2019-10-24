@@ -1,18 +1,20 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.net.MacAddress;
-
+import com.helix.lib.AshrayOpModeAlgos;
+import com.helix.lib.ftccomponentinterfaces.GamepadInterface;
+import com.helix.lib.ftccomponentinterfaces.ServoInterface;
+import com.helix.lib.ftccomponentinterfaces.TelemetryInterface;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import java.util.Arrays;
 import java.util.List;
-
 
 @TeleOp(name = "Basic: Iterative OpMode", group = "Iterative Opmode")
 
@@ -35,6 +37,9 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     static final double END_ARM_LENGTH_IN_INCH = 9.75;
     static final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
 
+    AshrayOpModeAlgos algos;
+
+    /*
 
     private void setArmPosition(double base, double middle, double gripperBase) {
 //        armServoBase.setPosition(base);
@@ -147,6 +152,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     }
 
 
+     */
+
     @Override
     public void init() {
 
@@ -167,8 +174,24 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         armServoMiddle.setDirection(Servo.Direction.REVERSE);
 
+        algos = new AshrayOpModeAlgos(
+                (GamepadInterface) gamepad1,
+                (GamepadInterface) gamepad2,
+                (ServoInterface) armServoBase,
+                (ServoInterface) armServoMiddle,
+                (ServoInterface) gripperServoBase,
+                (ServoInterface) gripper,
+                (TelemetryInterface) telemetry,
+                ARM_CODE_PICK_UP,
+                ARM_CODE_HOLDING,
+                ARM_CODE_REST,
+                BASE_ARM_LENGTH_IN_INCH,
+                END_ARM_LENGTH_IN_INCH,
+                JOYSTICK_TO_GRIPPER_POSITION_FACTOR);
+
+
         // initialize arm position
-        armPositions(ARM_CODE_HOLDING);
+        algos.armPositions(ARM_CODE_HOLDING);
         gripper.setPosition(0);
     }
 
@@ -193,10 +216,32 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
     }
+
+
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
 
     private void armLoop() {
+
+        AshrayOpModeAlgos algos = new AshrayOpModeAlgos(
+                (GamepadInterface) gamepad1,
+                (GamepadInterface) gamepad2,
+                (ServoInterface) armServoBase,
+                (ServoInterface) armServoMiddle,
+                (ServoInterface) gripperServoBase,
+                (ServoInterface) gripper,
+                (TelemetryInterface) telemetry,
+                ARM_CODE_PICK_UP,
+                ARM_CODE_HOLDING,
+                ARM_CODE_REST,
+                BASE_ARM_LENGTH_IN_INCH,
+                END_ARM_LENGTH_IN_INCH,
+                JOYSTICK_TO_GRIPPER_POSITION_FACTOR);
+
+        algos.runArmLoop();
+        return;
+
+        /*
         boolean gripperHold = false;
 
         if (gamepad2.a) {
@@ -308,6 +353,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         armServoBase.setPosition(armBaseNewPosition);
         armServoMiddle.setPosition(armMiddleNewPosition);
+
+         */
     }
 
     @Override

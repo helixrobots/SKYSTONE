@@ -35,6 +35,8 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
     double myJoystickX;
     double myJoystickY;
     ArmController myArmController;
+    Gamepad myGamepad1;
+    Gamepad myGamepad2;
 
     public Simulation() {
         myPos = 100;
@@ -47,12 +49,14 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         myFrame.setVisible(true);
         myArm = new Arm(new Servo(), 0.0, false, 10.0,
                         new Servo(), 0.0, false, 10.0,
-                        new Servo(), 0.0, false, 2.0);
+                        new Servo(), 0.0, false, 0.0);
         myArm.getServo(0).setMaxAngularSpeed(1.0);
         myArm.getServo(1).setMaxAngularSpeed(1.0);
         myArm.getServo(2).setMaxAngularSpeed(1.0);
-        myArmController = new SampleArmController(myArm);
-        // myArmController = new AshrayArmController(myArm);
+        myGamepad1 = new Gamepad();
+        myGamepad2 = new Gamepad();
+        //myArmController = new SampleArmController(myArm, myGamepad1,  myGamepad2);
+        myArmController = new AshrayArmController(myArm, myGamepad1, myGamepad2);
         myTrail = new ArrayList<Point2D>();
         // myFrame.addKeyListener(this);
         addKeyListener(this);
@@ -125,13 +129,11 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         // Take snapshot of joystick settings
         double joystickX = myJoystickX;
         double joystickY = myJoystickY;
-        myArmController.setArmForXY(myArm, joystickX, joystickY, timeInSeconds);
+        myArmController.setArmForXY(myArm, timeInSeconds);
     }
 
     private void update(double timeInSeconds) {
-        if (myJoystickX != 0.0 || myJoystickY != 0.0) {
-            adjustArm(timeInSeconds);
-        }
+        adjustArm(timeInSeconds);
         myArm.update(timeInSeconds);
     }
 
@@ -171,15 +173,15 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         System.out.println("Got " + Character.toString(c));
         if (!myCtrlPressed && !myOptionPressed && !myCommandPressed) {
             switch (c) {
-                case 'a': myArm.setTargetArmPosition(0.1, 0.1, 0.5);
+                case 'a': myArmController.setTargetArmPosition(myArm, 0.1, 0.1, 0.5);
                     break;
-                case 'b': myArm.setTargetArmPosition(0.5, 0.5, 0.5);
+                case 'b': myArmController.setTargetArmPosition(myArm, 0.5, 0.5, 0.5);
                     break;
                 case 'c': clearTrail();
-                          break;
-                case 'd': myArm.setTargetArmPosition(5.0 / 6.0, 0.5, 0.5);
                     break;
-                case 'f': myArm.setTargetArmPosition(1.0 / 6.0, 0.5, 0.5);
+                case 'd': myArmController.setTargetArmPosition(myArm, 5.0 / 6.0, 0.5, 0.5);
+                    break;
+                case 'f': myArmController.setTargetArmPosition(myArm, 1.0 / 6.0, 0.5, 0.5);
                     break;
             }
         }
@@ -193,6 +195,14 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         System.out.println(keyEvent.isAltDown());
         System.out.println(keyEvent.isControlDown());
         System.out.println(keyEvent.isMetaDown());
+        switch (c) {
+            case 'a': myGamepad2.a = true;
+                System.out.format("Setting gamepad  2 a to %s\n", myGamepad2.a);
+                break;
+            case 'b': myGamepad2.b = true;
+                System.out.format("Setting gamepad  2 b to %s\n", myGamepad2.b);
+                break;
+        }
         if (code == 17) {
             myCtrlPressed = true;
         }
@@ -209,6 +219,12 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         char c = keyEvent.getKeyChar();
         int code = keyEvent.getKeyCode();
         System.out.println("KeyReleased = " + Character.toString(c) + " " + Integer.toString(code));
+        switch (c) {
+            case 'a': myGamepad2.a = false;
+                break;
+            case 'b': myGamepad2.b = false;
+                break;
+        }
         if (code == 17) {
             myCtrlPressed = false;
         }
@@ -247,6 +263,8 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         Point2D.Double point = getJoystickXY(mouseEvent);
         myJoystickX = point.getX();
         myJoystickY = point.getY();
+        myGamepad2.right_stick_x = (float) point.getX();
+        myGamepad2.right_stick_y = (float) point.getY();
     }
 
     @Override
@@ -255,6 +273,8 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         System.out.format("Mouse released: %s %s\n", mouseEvent.getX(), mouseEvent.getY());
         myJoystickX = 0.0;
         myJoystickY = 0.0;
+        myGamepad2.right_stick_x = 0.0f;
+        myGamepad2.right_stick_y = 0.0f;
     }
 
     @Override
@@ -267,6 +287,8 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         System.out.format("Mouse exited: %s %s\n", mouseEvent.getX(), mouseEvent.getY());
         myJoystickX = 0.0;
         myJoystickY = 0.0;
+        myGamepad2.right_stick_x = 0.0f;
+        myGamepad2.right_stick_y = 0.0f;
     }
 
     //
@@ -280,6 +302,8 @@ public class Simulation extends Canvas implements Runnable, KeyListener, MouseLi
         Point2D.Double point = getJoystickXY(mouseEvent);
         myJoystickX = point.getX();
         myJoystickY = point.getY();
+        myGamepad2.right_stick_x = (float) point.getX();
+        myGamepad2.right_stick_y = (float) point.getY();
     }
 
     @Override

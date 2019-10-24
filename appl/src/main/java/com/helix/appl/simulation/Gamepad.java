@@ -1,6 +1,6 @@
 package com.helix.appl.simulation;
 
-import com.helix.lib.ftccomponentinterfaces.GamepadInterface;
+import com.helix.lib.LibGamepad;
 
-public class Gamepad implements GamepadInterface {
+public class Gamepad extends LibGamepad {
 }

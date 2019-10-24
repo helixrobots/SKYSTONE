@@ -1,6 +1,5 @@
 package com.helix.lib;
 
-import com.helix.lib.ftccomponentinterfaces.GamepadInterface;
 import com.helix.lib.ftccomponentinterfaces.ServoInterface;
 import com.helix.lib.ftccomponentinterfaces.TelemetryInterface;
 
@@ -9,8 +8,8 @@ import java.util.List;
 
 public class AshrayOpModeAlgos {
 
-    private GamepadInterface gamepad1;
-    private GamepadInterface gamepad2;
+    private LibGamepad gamepad1;
+    private LibGamepad gamepad2;
     private ServoInterface armServoBase;
     private ServoInterface armServoMiddle;
     private ServoInterface gripperServoBase;
@@ -25,8 +24,8 @@ public class AshrayOpModeAlgos {
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
 
-    public AshrayOpModeAlgos(GamepadInterface gamepad1,
-                             GamepadInterface gamepad2,
+    public AshrayOpModeAlgos(LibGamepad gamepad1,
+                             LibGamepad gamepad2,
                              ServoInterface armServoBase,
                              ServoInterface armServoMiddle,
                              ServoInterface gripperServoBase,
@@ -38,6 +37,8 @@ public class AshrayOpModeAlgos {
                              double baseArmLengthInInch,
                              double endArmLengthInInch,
                              double joystickToGripperPositionFactor) {
+        this.gamepad1 = gamepad1;
+        this.gamepad2 = gamepad2;
         this.armServoBase = armServoBase;
         this.armServoMiddle = armServoMiddle;
         this.gripperServoBase = gripperServoBase;
@@ -164,7 +165,8 @@ public class AshrayOpModeAlgos {
 
 
     public void runArmLoop() {
-
+        System.out.format("gamepad 2 a: %s\n", gamepad2.a);
+        System.out.format("gamepad 2 b: %s\n", gamepad2.b);
         boolean gripperHold = false;
 
         if (gamepad2.a) {
