@@ -1,2 +1,2 @@
-include ':FtcRobotController', ':appl'
+include ':FtcRobotController', ':appl', ':TeamCodeLib'
 include ':TeamCode'
