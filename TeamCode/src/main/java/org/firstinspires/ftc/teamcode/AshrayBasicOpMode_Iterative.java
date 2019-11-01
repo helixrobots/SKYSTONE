@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import java.util.Arrays;
 import java.util.List;
+import java.lang.*;
 
 
 @TeleOp(name = "Basic: Iterative OpMode", group = "Iterative Opmode")
@@ -36,13 +37,48 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     static final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
 
 
-    private void setArmPosition(double base, double middle, double gripperBase) {
+    private void setArmPosition(double base, double middle, double gripperBase) throws InterruptedException {
 //        armServoBase.setPosition(base);
 //        armServoMiddle.setPosition(middle);
+//        double newGripperServoBase = gripperBase;
+//        double newArmBasePosition = base;
+//        double newArmMiddlePosition = middle;
+//
+//        double currentBase = armServoBase.getPosition();
+//        double currentMiddle = armServoMiddle.getPosition();
+//        double currentGripper = gripperServoBase.getPosition();
+//
+//        double gripperDiff = Math.abs(newGripperServoBase - currentGripper);
+//        double baseDiff = Math.abs(newArmBasePosition - currentBase);
+//        double middleDiff = Math.abs(newArmMiddlePosition - currentMiddle);
+//
+//        double v = 0.05;
+//        int sleepMillis = 200;
+//
+//        double diff = Math.max(baseDiff, middleDiff);
+//        double x = diff / v;
+//
+//        for (int f = 1; f <= x; f++) {
+//            armServoBase.setPosition(f * baseDiff / x + currentBase);    // armBaseNewPosition is used to set the servo position in the arm loop
+//            armServoMiddle.setPosition(f * middleDiff / x + currentMiddle); // armMiddleNewPosition is used to set the servo position in the arm loop
+//            gripperServoBase.setPosition(f * gripperDiff / x + currentGripper);
+//            Thread.sleep(sleepMillis);
+//        }
         gripperServoBase.setPosition(gripperBase);
         armBaseNewPosition = base;
         armMiddleNewPosition = middle;
+    }
 
+    private void armPositions(String armPos) throws InterruptedException {
+        if (armPos.equals(ARM_CODE_REST)) {
+//            setArmPosition();
+
+        } else if (armPos.equals(ARM_CODE_PICK_UP)) {
+            setArmPosition(0.25, 0.1, 0.5);
+
+        } else if (armPos.equals(ARM_CODE_HOLDING)) {
+            setArmPosition(0.5, 0.5, 0.5);
+        }
     }
 
     private List<Double> armServoPositionsToAnglesInDegree(double baseServoPosition,
@@ -86,7 +122,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
                         + END_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH - r_squared)
                 / (2 * BASE_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH))));
 
-        double gamma = Math.abs(gripperBaseX) < 0.1 ? 90 : Math.toDegrees(Math.atan(gripperBaseY / gripperBaseX));
+        double gamma = Math.toDegrees(Math.acos(gripperBaseX / Math.sqrt(r_squared)));
 
         double delta = Math.toDegrees(Math.acos((r_squared
                 + BASE_ARM_LENGTH_IN_INCH * BASE_ARM_LENGTH_IN_INCH
@@ -125,25 +161,12 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 //        if(gripperBaseY < -13){
 //            gripperBaseY = -13;
 //        }
-        if(gripperBaseX < 0){
+        if (gripperBaseX < 0) {
             gripperBaseX = 0;
         }
 
 
-
         return Arrays.asList(gripperBaseX, gripperBaseY);
-    }
-
-    private void armPositions(String armPos) {
-        if (armPos.equals(ARM_CODE_REST)) {
-//            setArmPosition();
-
-        } else if (armPos.equals(ARM_CODE_PICK_UP)) {
-            setArmPosition(0.25, 0.1, 0.5);
-
-        } else if (armPos.equals(ARM_CODE_HOLDING)) {
-            setArmPosition(0.5, 0.5, 0.5);
-        }
     }
 
 
@@ -158,7 +181,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         armServoBase = hardwareMap.get(Servo.class, "s1");
         armServoMiddle = hardwareMap.get(Servo.class, "s2");
         gripperServoBase = hardwareMap.get(Servo.class, "s3");
-        gripper = hardwareMap.get(Servo.class, "s4");
+        gripper = hardwareMap.get(Servo.class, "s6");
 
         // initialize motion motors
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -167,8 +190,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         armServoMiddle.setDirection(Servo.Direction.REVERSE);
 
+
         // initialize arm position
-        armPositions(ARM_CODE_HOLDING);
+        try {
+            armPositions(ARM_CODE_HOLDING);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         gripper.setPosition(0);
     }
 
@@ -181,7 +209,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     @Override
     public void start() {
         runtime.reset();
-        // todo: ashray - verify start is not resetting things from init()
     }
 
     private void motorLoop() {
@@ -193,10 +220,11 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
     }
+
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
 
-    private void armLoop() {
+    private void armLoop() throws InterruptedException {
         boolean gripperHold = false;
 
         if (gamepad2.a) {
@@ -209,23 +237,23 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             return;
         }
 
-        if(gamepad2.x) {
-            if(gripperHold == true){
+        if (gamepad2.x) {
+            if (gripperHold == true) {
                 gripperHold = false;
-            }else{
+            } else {
                 gripperHold = true;
             }
         }
-        if(gripperHold == false){
-            gripper.setPosition(0.5);
-        }else{
+        if (gripperHold == false) {
+            gripper.setPosition(0);
+        } else {
             gripper.setPosition(1);
         }
 
         // logic for gripper base movement - x and y
 
-        double gamepad2_X = gamepad2.right_stick_x/50;
-        double gamepad2_Y = -gamepad2.right_stick_y/50;
+        double gamepad2_X = gamepad2.right_stick_x / 50;
+        double gamepad2_Y = -gamepad2.right_stick_y / 50;
 
 
         double baseServoPosition = armBaseNewPosition;     //0.4
@@ -268,7 +296,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 //        telemetry.addData("armBaseNewPosition", armBaseNewPosition);
 //        telemetry.addData("armMiddleNewPosition", armMiddleNewPosition);
         telemetry.addData("GripperBoolean", gripperHold);
-        telemetry.addData("Position", "("+newGripperBaseX+", "+ newGripperBaseY + ")");
+        telemetry.addData("Position", "(" + newGripperBaseX + ", " + newGripperBaseY + ")");
         telemetry.update();
 
 //        if (armBaseNewPosition > 0.5) {
@@ -287,22 +315,22 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 //            armMiddleNewPosition = 0.1;
 //        }
 
-        if(armBaseNewPosition > 1 ){
+        if (armBaseNewPosition > 1) {
             armBaseNewPosition = 1;
         }
-        if(Double.valueOf(armBaseNewPosition).isNaN()){
+        if (Double.valueOf(armBaseNewPosition).isNaN()) {
             armBaseNewPosition = baseServoPosition;
         }
-        if(armBaseNewPosition< 0){
-            armBaseNewPosition = 0;
-        }
-        if(armMiddleNewPosition > 1){
+//        if (armBaseNewPosition < 0) {
+//            armBaseNewPosition = 0;
+//        }
+        if (armMiddleNewPosition > 1) {
             armMiddleNewPosition = 1;
         }
-        if(Double.valueOf(armMiddleNewPosition).isNaN()){
+        if (Double.valueOf(armMiddleNewPosition).isNaN()) {
             armMiddleNewPosition = middleServoPosition;
         }
-        if(armMiddleNewPosition< 0){
+        if (armMiddleNewPosition < 0) {
             armMiddleNewPosition = 0;
         }
 
@@ -313,15 +341,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     @Override
     public void loop() {
 
-/*
-        telemetry.addData("Servo1 Position", armServoBase.getPosition());
-        telemetry.addData("Servo2 Position", armServoMiddle.getPosition());
 
-        telemetry.update();
-*/
-
-        motorLoop();
-        armLoop();
+        motorLoop(); // drive train
+        try {
+            armLoop(); // arm control
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
