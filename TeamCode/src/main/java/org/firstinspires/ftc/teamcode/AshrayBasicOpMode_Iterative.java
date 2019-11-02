@@ -93,11 +93,20 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
                                                                double middleServoAngleInDegrees) {
         double beta_relative_to_horizontal = baseServoAngleInDegrees - middleServoAngleInDegrees;
 
+        // cos can tak negative radians
         double x = BASE_ARM_LENGTH_IN_INCH * Math.cos(Math.toRadians(baseServoAngleInDegrees))
                 + END_ARM_LENGTH_IN_INCH * Math.cos(Math.toRadians(beta_relative_to_horizontal));
 
+        // sin can tak negative radians
         double y = BASE_ARM_LENGTH_IN_INCH * Math.sin(Math.toRadians(baseServoAngleInDegrees))
                 + END_ARM_LENGTH_IN_INCH * Math.sin(Math.toRadians(beta_relative_to_horizontal));
+
+        if(Double.isNaN(x)){
+            telemetry.addData("x is bad: " , x);
+        }
+        if(Double.isNaN(y)){
+            telemetry.addData("y is bad: " , y);
+        }
 
         return Arrays.asList(x, y);
     }
@@ -117,17 +126,37 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 //        }
 
 
+
+
+
         double middleServoAngleInDegrees = 180 - Math.toDegrees(Math.acos(((
                 BASE_ARM_LENGTH_IN_INCH * BASE_ARM_LENGTH_IN_INCH
                         + END_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH - r_squared)
                 / (2 * BASE_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH))));
 
-        double gamma = Math.toDegrees(Math.acos(gripperBaseX / Math.sqrt(r_squared)));
+        if (Double.isNaN(middleServoAngleInDegrees)) {
+            telemetry.addData("middleServoAngleInDegrees is bad: ", middleServoAngleInDegrees);
+
+            return Arrays.asList(oldBaseServoAngleInDegrees,  oldMiddleServoAngleInDegrees);
+        }
+
+        double gamma = Math.copySign(Math.toDegrees(Math.acos(gripperBaseX / Math.sqrt(r_squared))), gripperBaseY);
+
+        if (Double.isNaN(gamma)) {
+            telemetry.addData("gamma is bad: ", gamma);
+
+            return Arrays.asList(oldBaseServoAngleInDegrees,  oldMiddleServoAngleInDegrees);
+        }
 
         double delta = Math.toDegrees(Math.acos((r_squared
                 + BASE_ARM_LENGTH_IN_INCH * BASE_ARM_LENGTH_IN_INCH
                 - END_ARM_LENGTH_IN_INCH * END_ARM_LENGTH_IN_INCH)
                 / (2 * Math.sqrt(r_squared) * BASE_ARM_LENGTH_IN_INCH)));
+
+        telemetry.addData("Gamma: ", gamma);
+        telemetry.addData("Delta: ", delta);
+        telemetry.addData("middleServoAngleInDegrees: ", middleServoAngleInDegrees);
+
 
         double baseServoAngleInDegrees = gamma + delta;
         return Arrays.asList(baseServoAngleInDegrees, middleServoAngleInDegrees);
@@ -146,14 +175,14 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
                                                    double gamepad2_Y,
                                                    double gripperBaseX,
                                                    double gripperBaseY) {
-        if (Math.abs(gamepad2_X) > Math.abs(gamepad2_Y)) {
-            gamepad2_Y = 0;
-        } else {
-            gamepad2_X = 0;
-        }
+//        if (Math.abs(gamepad2_X) > Math.abs(gamepad2_Y)) {
+//            gamepad2_Y = 0;
+//        } else {
+//            gamepad2_X = 0;
+//        }
 
-        gripperBaseX = gripperBaseX + gamepad2_X * JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
-        gripperBaseY = gripperBaseY + gamepad2_Y * JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
+        double newGripperBaseX = gripperBaseX + gamepad2_X * JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
+        double newGripperBaseY = gripperBaseY + gamepad2_Y * JOYSTICK_TO_GRIPPER_POSITION_FACTOR;
 
 //        if(gripperBaseY > 16.5){
 //            gripperBaseY = 16.5;
@@ -161,12 +190,12 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 //        if(gripperBaseY < -13){
 //            gripperBaseY = -13;
 //        }
-        if (gripperBaseX < 0) {
-            gripperBaseX = 0;
+        if(Math.sqrt(newGripperBaseX * newGripperBaseX + newGripperBaseY * newGripperBaseY) >= (BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH)){
+            return Arrays.asList(gripperBaseX, gripperBaseY);
         }
 
 
-        return Arrays.asList(gripperBaseX, gripperBaseY);
+        return Arrays.asList(newGripperBaseX, newGripperBaseY);
     }
 
 
@@ -223,6 +252,11 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
+
+    private double gripperPositionCalculator(int baseServoAngleInDegrees, int middleServoAngleInDegrees){
+        double x = 0.5 + ((90 + baseServoAngleInDegrees - middleServoAngleInDegrees)/(135));
+        return x;
+    }
 
     private void armLoop() throws InterruptedException {
         boolean gripperHold = false;
@@ -318,18 +352,14 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         if (armBaseNewPosition > 1) {
             armBaseNewPosition = 1;
         }
-        if (Double.valueOf(armBaseNewPosition).isNaN()) {
-            armBaseNewPosition = baseServoPosition;
-        }
+
 //        if (armBaseNewPosition < 0) {
 //            armBaseNewPosition = 0;
 //        }
         if (armMiddleNewPosition > 1) {
             armMiddleNewPosition = 1;
         }
-        if (Double.valueOf(armMiddleNewPosition).isNaN()) {
-            armMiddleNewPosition = middleServoPosition;
-        }
+
         if (armMiddleNewPosition < 0) {
             armMiddleNewPosition = 0;
         }
