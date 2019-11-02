@@ -253,8 +253,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
 
-    private double gripperPositionCalculator(int baseServoAngleInDegrees, int middleServoAngleInDegrees){
-        double x = 0.5 + ((90 + baseServoAngleInDegrees - middleServoAngleInDegrees)/(135));
+    private double gripperPositionCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees){
+        double x = 0.5 ;
+//        double x = 0.5 + ((90 + baseServoAngleInDegrees - middleServoAngleInDegrees)/(135));
+        x = Math.min(Math.max(x, 0.5), 1.0);
         return x;
     }
 
@@ -284,6 +286,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             gripper.setPosition(1);
         }
 
+
         // logic for gripper base movement - x and y
 
         double gamepad2_X = gamepad2.right_stick_x / 50;
@@ -296,6 +299,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         double baseServoAngleInDegrees = anglesInDegrees.get(0);    //63
         double middleServoAngleInDegrees = anglesInDegrees.get(1);  //8.1
+
+        double gripperServoTargetPosition = gripperPositionCalculator(baseServoAngleInDegrees, middleServoAngleInDegrees);
+        telemetry.addData("Target gripper:  ", gripperServoTargetPosition);
+        gripperServoBase.setPosition(gripperServoTargetPosition);
 
         List<Double> gripperBasePosition = getGripperBasePositionFromServoAngles(baseServoAngleInDegrees, middleServoAngleInDegrees);
 
