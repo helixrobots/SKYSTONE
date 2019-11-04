@@ -44,6 +44,15 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Double targetServoMiddlePosition = null;
     private Double targetServoGripperBasePosition = null;
     boolean gripperHold = false;
+    private int pickupCounter;
+
+    private enum ArmLoopState {
+        NORMAL,
+        RUNNING_PRESET,
+        PICKING_UP,
+    }
+
+    private ArmLoopState currentArmLoopState;
 
     private void setArmPosition(double base, double middle, double gripperBase) {
         /*
@@ -79,6 +88,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         targetServoBasePosition = base;
         targetServoMiddlePosition = middle;
         targetServoGripperBasePosition = gripperBase;
+        currentArmLoopState = ArmLoopState.RUNNING_PRESET;
     }
 
     private void setArmPosition(double base, double middle) {
@@ -159,6 +169,9 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         }
         else {
             gripperDiff = 0.0;
+        }
+        if (targetServoBasePosition == null && targetServoMiddlePosition == null && targetServoGripperBasePosition == null) {
+            currentArmLoopState = ArmLoopState.NORMAL;
         }
 
         gripperServoBase.setPosition(currentGripper + gripperDiff);
@@ -321,6 +334,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         armServoMiddle.setDirection(Servo.Direction.REVERSE);
+        currentArmLoopState = ArmLoopState.NORMAL;
 
         // initialize arm position
         try {
@@ -381,7 +395,21 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         }
         else if ((numIterations % 4000) == 2000) {
             // armPositions(ARM_CODE_HOLDING);
+
         }
+
+        if (currentArmLoopState == ArmLoopState.RUNNING_PRESET) {
+            moveTowardsTarget();
+            return;
+        } else if (currentArmLoopState == ArmLoopState.PICKING_UP) {
+            assert pickupCounter > 0;
+            pickupCounter -= 1;
+            if (pickupCounter == 0) {
+                armPositions(ARM_CODE_TRANSPORT);
+            }
+            return;
+        }
+        assert currentArmLoopState == ArmLoopState.NORMAL;
 
         if (gamepad2.a) {
             // button A
@@ -407,7 +435,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             gripper.setPosition(1);
         }
 
-        moveTowardsTarget();
 
         // logic for gripper base movement - x and y
 
