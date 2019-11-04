@@ -32,6 +32,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     final String ARM_CODE_PICK_UP = "pick up";
     final String ARM_CODE_HOLDING = "hold";
     final String ARM_CODE_REST = "rest";
+    // These two states may be redundant (they may be the same as the PICK_UP and HOLDING settings
+    // above, but not sure, so we don't interfere with those.  We can reconcile later.
+    final String ARM_CODE_READY_FOR_PICK_UP = "ready_pickup";
+    final String ARM_CODE_TRANSPORT = "transport";
     static final double BASE_ARM_LENGTH_IN_INCH = 9.875;
     static final double END_ARM_LENGTH_IN_INCH = 9.75;
     static final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
@@ -77,7 +81,33 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         targetServoGripperBasePosition = gripperBase;
     }
 
+    private void setArmPosition(double base, double middle) {
+        /*
+        Sets the servos for the arm base and the arm middle servos to the positions specified in
+        the arguments.  Sets the servo for the gripper to point the gripper down.
+         */
+        List<Double> targetServoAngles =
+                armServoPositionsToAnglesInDegree(base, middle);
+        double gripperAngle = gripperAngleCalculator(targetServoAngles.get(0), targetServoAngles.get(1));
+        double gripperPosition = gripperAngleToPosition(gripperAngle);
+        setArmPosition(base, middle, gripperPosition);
+    }
 
+    private void setArmXYPosition(double x, double y) {
+        /*
+        Sets the servo positions given a target (x, y) position.  x must be greater than 0, for now.
+         */
+        assert(x >= 0.0);
+        List<Double> currentServoAngles =
+                armServoPositionsToAnglesInDegree(
+                        armServoBase.getPosition(), armServoMiddle.getPosition());
+        List<Double> targetServoAngles = getServoAnglesFromGripperBasePosition(
+                x, y, currentServoAngles.get(0), currentServoAngles.get(1));
+        double gripperAngle = gripperAngleCalculator(targetServoAngles.get(0), targetServoAngles.get(1));
+        List<Double> targetServoPositions = anglesInDegreeToArmServoPositions(
+                targetServoAngles.get(0), targetServoAngles.get(1), gripperAngle);
+        setArmPosition(targetServoPositions.get(0), targetServoPositions.get(1), targetServoPositions.get(2));
+    }
 
     private void moveTowardsTarget() {
         double currentBase = armServoBase.getPosition();
@@ -145,6 +175,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         } else if (armPos.equals(ARM_CODE_HOLDING)) {
             setArmPosition(0.5, 0.5, 0.5);
+        } else if (armPos.equals(ARM_CODE_READY_FOR_PICK_UP)) {
+            setArmXYPosition(6.0, -1.0);
+        } else if (armPos.equals(ARM_CODE_TRANSPORT)) {
+            setArmXYPosition(6.0, 2.0);
         }
     }
 
@@ -371,6 +405,12 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             gripper.setPosition(0);
         } else {
             gripper.setPosition(1);
+
+            /* We may need to change this so that it waits until the next cycle so that the
+               gripper is put into hold position.
+             */
+
+            armPositions(ARM_CODE_TRANSPORT);
         }
 
         moveTowardsTarget();
