@@ -79,9 +79,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
 
 
-
-    }
-
     private void moveTowardsTarget() {
         double currentBase = armServoBase.getPosition();
         double currentMiddle = armServoMiddle.getPosition();
@@ -90,7 +87,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         Double newArmMiddlePosition = targetServoMiddlePosition;
         Double newGripperServoBasePosition = targetServoGripperBasePosition;
 
-        double maxDelta = 0.005;
+        double maxDelta = 0.0025;
         double baseDiff;
         if (newArmBasePosition != null) {
             baseDiff = newArmBasePosition - currentBase;
@@ -290,8 +287,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         armServoMiddle.setDirection(Servo.Direction.REVERSE);
-        gripperServoBase.setDirection(Servo.Direction.REVERSE);
-
 
         // initialize arm position
         try {
@@ -328,7 +323,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
 
     private double gripperAngleCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees) {
-        return Math.max(Math.min(90 - baseServoAngleInDegrees - middleServoAngleInDegrees, 0.0), 135.0);
+        return Math.min(Math.max(90 + baseServoAngleInDegrees - middleServoAngleInDegrees + 45.0, 0.0), 135.0);
     }
 
     private double gripperPositionCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees){
@@ -339,7 +334,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     }
 
     private double gripperAngleToPosition(double angle) {
-        return Math.max(Math.min(0.5 - angle / 135.0, 0.5), 0.0);
+        return Math.max(Math.min(0.5 - angle / 270.0, 0.5), 0.0);
     }
 
     private void armLoop() throws InterruptedException {
@@ -349,10 +344,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         telemetry.addData("Num Iterations:", numIterations);
 
         if ((numIterations % 4000) == 0) {
-            armPositions(ARM_CODE_PICK_UP);
+            // armPositions(ARM_CODE_PICK_UP);
         }
         else if ((numIterations % 4000) == 2000) {
-            armPositions(ARM_CODE_HOLDING);
+            // armPositions(ARM_CODE_HOLDING);
         }
 
         if (gamepad2.a) {
@@ -413,6 +408,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         double newMiddleServoAngle = newServoAngles.get(1);
 
         List<Double> newServoPositions = anglesInDegreeToArmServoPositions(newBaseServoAngle, newMiddleServoAngle, gripperServoTargetAngle);
+        telemetry.addData("Target base angle:  ", newBaseServoAngle);
+        telemetry.addData("Target middle angle:  ", newMiddleServoAngle);
         telemetry.addData("Target gripper angle:  ", gripperServoTargetAngle);
         telemetry.addData("Target gripper position:  ", newServoPositions.get(2));
 
