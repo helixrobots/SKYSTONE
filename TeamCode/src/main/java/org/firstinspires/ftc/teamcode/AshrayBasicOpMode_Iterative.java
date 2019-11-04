@@ -41,7 +41,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Double targetServoGripperBasePosition = null;
 
 
-    private void setArmPosition(double base, double middle, double gripperBase) throws InterruptedException {
+    private void setArmPosition(double base, double middle, double gripperBase) {
         /*
         armServoBase.setPosition(base);armServoMiddle.setPosition(middle);
         double newGripperServoBase = gripperBase;
@@ -75,6 +75,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         targetServoBasePosition = base;
         targetServoMiddlePosition = middle;
         targetServoGripperBasePosition = gripperBase;
+    }
 
 
 
@@ -233,11 +234,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
 
     private List<Double> anglesInDegreeToArmServoPositions(double baseServoAngleInDegrees,
-                                                           double middleServoAngleInDegrees) {
+                                                           double middleServoAngleInDegrees,
+                                                           double gripperServoAngleInDegrees) {
         double baseServoPosition = (baseServoAngleInDegrees + 45) / 270;
         double middleServoPosition = (135 - middleServoAngleInDegrees) / 270;
+        double gripperServoPosition = gripperAngleToPosition(gripperServoAngleInDegrees);
 
-        return Arrays.asList(baseServoPosition, middleServoPosition);
+        return Arrays.asList(baseServoPosition, middleServoPosition, gripperServoPosition);
     }
 
     private List<Double> getNewGripperBasePosition(double gamepad2_X,
@@ -323,11 +326,20 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     double armBaseNewPosition = 0.5;
     double armMiddleNewPosition = 0.5;
 
+
+    private double gripperAngleCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees) {
+        return Math.max(Math.min(90 - baseServoAngleInDegrees - middleServoAngleInDegrees, 0.0), 135.0);
+    }
+
     private double gripperPositionCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees){
         double x = 0.3 ;
-//        double x = 0.5 - ((90 + baseServoAngleInDegrees - middleServoAngleInDegrees)/(135));
-        x = Math.max(Math.min(x, 0.5), 0.0);
-        return x;
+        double gripperAngle = gripperAngleCalculator(
+                baseServoAngleInDegrees, middleServoAngleInDegrees);
+        return gripperAngleToPosition(gripperAngle);
+    }
+
+    private double gripperAngleToPosition(double angle) {
+        return Math.max(Math.min(0.5 - angle / 135.0, 0.5), 0.0);
     }
 
     private void armLoop() throws InterruptedException {
@@ -383,9 +395,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         double baseServoAngleInDegrees = anglesInDegrees.get(0);    //63
         double middleServoAngleInDegrees = anglesInDegrees.get(1);  //8.1
 
-        double gripperServoTargetPosition = gripperPositionCalculator(baseServoAngleInDegrees, middleServoAngleInDegrees);
-        telemetry.addData("Target gripper:  ", gripperServoTargetPosition);
-        gripperServoBase.setPosition(gripperServoTargetPosition);
+        double gripperServoTargetAngle = gripperAngleCalculator(baseServoAngleInDegrees, middleServoAngleInDegrees);
 
         List<Double> gripperBasePosition = getGripperBasePositionFromServoAngles(baseServoAngleInDegrees, middleServoAngleInDegrees);
 
@@ -402,10 +412,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         double newBaseServoAngle = newServoAngles.get(0);
         double newMiddleServoAngle = newServoAngles.get(1);
 
-        List<Double> newServoPositions = anglesInDegreeToArmServoPositions(newBaseServoAngle, newMiddleServoAngle);
+        List<Double> newServoPositions = anglesInDegreeToArmServoPositions(newBaseServoAngle, newMiddleServoAngle, gripperServoTargetAngle);
+        telemetry.addData("Target gripper angle:  ", gripperServoTargetAngle);
+        telemetry.addData("Target gripper position:  ", newServoPositions.get(2));
 
         armBaseNewPosition = newServoPositions.get(0);
         armMiddleNewPosition = newServoPositions.get(1);
+        gripperServoBase.setPosition(newServoPositions.get(2));
 
 //        telemetry.addData("baseServoPosition", baseServoPosition);
 //        telemetry.addData("middleServoPosition", middleServoPosition);
