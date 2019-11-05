@@ -43,7 +43,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Double targetServoBasePosition = null;
     private Double targetServoMiddlePosition = null;
     private Double targetServoGripperBasePosition = null;
-
+    boolean gripperHold = false;
 
     private void setArmPosition(double base, double middle, double gripperBase) {
         /*
@@ -372,7 +372,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     }
 
     private void armLoop() throws InterruptedException {
-        boolean gripperHold = false;
 
         numIterations++;
         telemetry.addData("Num Iterations:", numIterations);
