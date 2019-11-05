@@ -176,9 +176,9 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         } else if (armPos.equals(ARM_CODE_HOLDING)) {
             setArmPosition(0.5, 0.5, 0.5);
         } else if (armPos.equals(ARM_CODE_READY_FOR_PICK_UP)) {
-            setArmXYPosition(6.0, -1.0);
+            setArmXYPosition(9.0, -5.0);
         } else if (armPos.equals(ARM_CODE_TRANSPORT)) {
-            setArmXYPosition(6.0, 2.0);
+            setArmXYPosition(BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH - 0.1, 0.0);
         }
     }
 
@@ -386,31 +386,26 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         if (gamepad2.a) {
             // button A
-            armPositions(ARM_CODE_PICK_UP);
+            // armPositions(ARM_CODE_PICK_UP);
+            armPositions(ARM_CODE_READY_FOR_PICK_UP);
             return;
         } else if (gamepad2.b) {
             // button B
-            armPositions(ARM_CODE_HOLDING);
+            armPositions(ARM_CODE_TRANSPORT);
             return;
+        } else if (gamepad2.y) {
+            armPositions(ARM_CODE_HOLDING);
         }
 
-        if (gamepad2.x) {
-            if (gripperHold == true) {
-                gripperHold = false;
-            } else {
-                gripperHold = true;
-            }
+        if (gamepad2.dpad_up) {
+           gripperHold = true;
+        } else if(gamepad2.dpad_down){
+            gripperHold = false;
         }
         if (gripperHold == false) {
             gripper.setPosition(0);
         } else {
             gripper.setPosition(1);
-
-            /* We may need to change this so that it waits until the next cycle so that the
-               gripper is put into hold position.
-             */
-
-            armPositions(ARM_CODE_TRANSPORT);
         }
 
         moveTowardsTarget();
