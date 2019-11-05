@@ -35,24 +35,27 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     // These two states may be redundant (they may be the same as the PICK_UP and HOLDING settings
     // above, but not sure, so we don't interfere with those.  We can reconcile later.
     final String ARM_CODE_READY_FOR_PICK_UP = "ready_pickup";
+    final String ARM_CODE_PREP_FOR_TRANSPORT = "prep_transport";
     final String ARM_CODE_TRANSPORT = "transport";
     static final double BASE_ARM_LENGTH_IN_INCH = 9.875;
     static final double END_ARM_LENGTH_IN_INCH = 9.75;
     static final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
+    double presetSpeed = 0.0025;
     private int numIterations = 0;
     private Double targetServoBasePosition = null;
     private Double targetServoMiddlePosition = null;
     private Double targetServoGripperBasePosition = null;
     boolean gripperHold = false;
-    private int pickupCounter;
+    private int pickupCounter = 0;
 
     private enum ArmLoopState {
         NORMAL,
         RUNNING_PRESET,
         PICKING_UP,
+        PREP_FOR_TRANSPORT,
     }
 
-    private ArmLoopState currentArmLoopState;
+    private ArmLoopState currentArmLoopState = ArmLoopState.NORMAL;
 
     private void setArmPosition(double base, double middle, double gripperBase) {
         /*
@@ -88,7 +91,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         targetServoBasePosition = base;
         targetServoMiddlePosition = middle;
         targetServoGripperBasePosition = gripperBase;
-        currentArmLoopState = ArmLoopState.RUNNING_PRESET;
     }
 
     private void setArmPosition(double base, double middle) {
@@ -127,7 +129,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         Double newArmMiddlePosition = targetServoMiddlePosition;
         Double newGripperServoBasePosition = targetServoGripperBasePosition;
 
-        double maxDelta = 0.0025;
+        double maxDelta = presetSpeed;
+
         double baseDiff;
         if (newArmBasePosition != null) {
             baseDiff = newArmBasePosition - currentBase;
@@ -143,6 +146,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             baseDiff = 0.0;
 
         }
+
         double middleDiff;
         if (newArmMiddlePosition != null) {
             middleDiff = newArmMiddlePosition - currentMiddle;
@@ -158,7 +162,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         }
 
         double gripperDiff;
-        if (newArmMiddlePosition != null) {
+        if (newGripperServoBasePosition != null) {
             gripperDiff = newGripperServoBasePosition - currentGripper;
             if (Math.abs(gripperDiff) > maxDelta) {
                 gripperDiff = Math.copySign(Math.min(maxDelta, Math.abs(gripperDiff)), gripperDiff);
@@ -170,9 +174,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         else {
             gripperDiff = 0.0;
         }
-        if (targetServoBasePosition == null && targetServoMiddlePosition == null && targetServoGripperBasePosition == null) {
-            currentArmLoopState = ArmLoopState.NORMAL;
-        }
 
         gripperServoBase.setPosition(currentGripper + gripperDiff);
         armBaseNewPosition = currentBase + baseDiff;
@@ -182,14 +183,14 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private void armPositions(String armPos) throws InterruptedException {
         if (armPos.equals(ARM_CODE_REST)) {
 //            setArmPosition();
-
         } else if (armPos.equals(ARM_CODE_PICK_UP)) {
             setArmPosition(0.25, 0.1, 0.5);
-
         } else if (armPos.equals(ARM_CODE_HOLDING)) {
             setArmPosition(0.5, 0.5, 0.5);
         } else if (armPos.equals(ARM_CODE_READY_FOR_PICK_UP)) {
             setArmXYPosition(9.0, -5.0);
+        } else if (armPos.equals(ARM_CODE_PREP_FOR_TRANSPORT)) {
+            setArmXYPosition(11.0, 0.0);
         } else if (armPos.equals(ARM_CODE_TRANSPORT)) {
             setArmXYPosition(BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH - 0.1, 0.0);
         }
@@ -382,7 +383,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     }
 
     private double gripperAngleToPosition(double angle) {
-        return Math.max(Math.min(0.5 - angle / 270.0, 0.5), 0.0);
+        return Math.max(Math.min((135.0 - angle) / 270.0, 0.5), 0.0);
+    }
+
+    private boolean targetReached() {
+        return (targetServoBasePosition == null &&
+                targetServoMiddlePosition == null &&
+                targetServoGripperBasePosition == null);
     }
 
     private void armLoop() throws InterruptedException {
@@ -398,14 +405,31 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         }
 
+        telemetry.addData("State: ", currentArmLoopState);
         if (currentArmLoopState == ArmLoopState.RUNNING_PRESET) {
+            telemetry.addData("Target Base:", targetServoBasePosition);
+            telemetry.addData("Target Middle:", targetServoMiddlePosition);
+            telemetry.addData("Target Gripper:", targetServoGripperBasePosition);
             moveTowardsTarget();
+            if (targetReached()) {
+                currentArmLoopState = ArmLoopState.NORMAL;
+            }
             return;
+        } else if (currentArmLoopState == ArmLoopState.PREP_FOR_TRANSPORT) {
+            telemetry.addData("Target Base:", targetServoBasePosition);
+            telemetry.addData("Target Middle:", targetServoMiddlePosition);
+            telemetry.addData("Target Gripper:", targetServoGripperBasePosition);
+            moveTowardsTarget();
+            if (targetReached()) {
+                armPositions(ARM_CODE_TRANSPORT);
+                currentArmLoopState = ArmLoopState.RUNNING_PRESET;
+            }
         } else if (currentArmLoopState == ArmLoopState.PICKING_UP) {
             assert pickupCounter > 0;
             pickupCounter -= 1;
             if (pickupCounter == 0) {
-                armPositions(ARM_CODE_TRANSPORT);
+                armPositions(ARM_CODE_PREP_FOR_TRANSPORT);
+                currentArmLoopState = ArmLoopState.PREP_FOR_TRANSPORT;
             }
             return;
         }
@@ -415,13 +439,16 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             // button A
             // armPositions(ARM_CODE_PICK_UP);
             armPositions(ARM_CODE_READY_FOR_PICK_UP);
+            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
             return;
         } else if (gamepad2.b) {
             // button B
-            armPositions(ARM_CODE_TRANSPORT);
+            armPositions(ARM_CODE_PREP_FOR_TRANSPORT);
+            currentArmLoopState = ArmLoopState.PREP_FOR_TRANSPORT;
             return;
         } else if (gamepad2.y) {
             armPositions(ARM_CODE_HOLDING);
+            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
         }
 
         if (gamepad2.dpad_up) {
