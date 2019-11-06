@@ -47,6 +47,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Double targetServoGripperBasePosition = null;
     boolean gripperHold = false;
     private int pickupCounter = 0;
+    private boolean gamepadXPushed = false;
 
     private enum ArmLoopState {
         NORMAL,
@@ -176,8 +177,11 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         }
 
         gripperServoBase.setPosition(currentGripper + gripperDiff);
+        // These two variables need to be set, for reasons we won't explain here.  Do not remove.
         armBaseNewPosition = currentBase + baseDiff;
         armMiddleNewPosition = currentMiddle + middleDiff;
+        armServoBase.setPosition(armBaseNewPosition);
+        armServoMiddle.setPosition(armMiddleNewPosition);
     }
 
     private void armPositions(String armPos) throws InterruptedException {
@@ -192,7 +196,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         } else if (armPos.equals(ARM_CODE_PREP_FOR_TRANSPORT)) {
             setArmXYPosition(11.0, 0.0);
         } else if (armPos.equals(ARM_CODE_TRANSPORT)) {
-            setArmXYPosition(BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH - 0.1, 0.0);
+            setArmXYPosition(BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH - 0.1, -1.0);
         }
     }
 
@@ -424,6 +428,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
                 armPositions(ARM_CODE_TRANSPORT);
                 currentArmLoopState = ArmLoopState.RUNNING_PRESET;
             }
+            return;
         } else if (currentArmLoopState == ArmLoopState.PICKING_UP) {
             assert pickupCounter > 0;
             pickupCounter -= 1;
@@ -439,6 +444,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             // button A
             // armPositions(ARM_CODE_PICK_UP);
             armPositions(ARM_CODE_READY_FOR_PICK_UP);
+            gripper.setPosition(1);
+            gripperHold = true;
             currentArmLoopState = ArmLoopState.RUNNING_PRESET;
             return;
         } else if (gamepad2.b) {
@@ -451,10 +458,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             currentArmLoopState = ArmLoopState.RUNNING_PRESET;
         }
 
-        if (gamepad2.dpad_up) {
-           gripperHold = true;
-        } else if(gamepad2.dpad_down){
-            gripperHold = false;
+        if (gamepad2.x) {
+            if (!gamepadXPushed) {
+                gamepadXPushed = true;
+                gripperHold = !gripperHold;
+            }
+        } else {
+            gamepadXPushed = false;
         }
         if (gripperHold == false) {
             gripper.setPosition(0);
