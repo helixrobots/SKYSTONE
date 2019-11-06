@@ -27,6 +27,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Servo armServoMiddle = null;
     private Servo gripperServoBase = null;
     private Servo gripper = null;
+    private Servo leftClaw = null;
+    private Servo rightClaw = null;
     double leftPower;
     double rightPower;
     final String ARM_CODE_PICK_UP = "pick up";
@@ -104,6 +106,16 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         double gripperAngle = gripperAngleCalculator(targetServoAngles.get(0), targetServoAngles.get(1));
         double gripperPosition = gripperAngleToPosition(gripperAngle);
         setArmPosition(base, middle, gripperPosition);
+    }
+
+    private void openClaw() {
+        leftClaw.setPosition(1);
+        rightClaw.setPosition(0);
+    }
+
+    private void closeClaw() {
+        leftClaw.setPosition(0);
+        rightClaw.setPosition(1);
     }
 
     private void setArmXYPosition(double x, double y) {
@@ -331,6 +343,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         armServoBase = hardwareMap.get(Servo.class, "s1");
         armServoMiddle = hardwareMap.get(Servo.class, "s2");
         gripperServoBase = hardwareMap.get(Servo.class, "s3");
+        leftClaw  = hardwareMap.get(Servo.class, "s4");
+        rightClaw = hardwareMap.get(Servo.class, "s5");
         gripper = hardwareMap.get(Servo.class, "s6");
 
         // initialize motion motors
@@ -398,6 +412,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
     private void armLoop() throws InterruptedException {
 
+
         numIterations++;
         telemetry.addData("Num Iterations:", numIterations);
 
@@ -439,7 +454,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             return;
         }
         assert currentArmLoopState == ArmLoopState.NORMAL;
-
+        
         if (gamepad2.a) {
             // button A
             // armPositions(ARM_CODE_PICK_UP);
@@ -470,6 +485,13 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             gripper.setPosition(0);
         } else {
             gripper.setPosition(1);
+        }
+
+        if(gamepad2.right_bumper){
+            closeClaw();
+        }
+        if(gamepad2.left_bumper){
+            openClaw();
         }
 
 
