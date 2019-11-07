@@ -18,8 +18,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import java.util.Locale;
 
-@Autonomous(name="Ian Autonomous Drive", group="Helix")
-public class IanAutonomousDrive extends LinearOpMode {
+
+public abstract class IanAutonomousBase extends LinearOpMode {
+
+    private static final double ANGLE_TOLERANCE = 3.0;
+    public static final int STABILITY_THRESHOLD = 500;
+    public static final int MEASURE_THRESHOLD = 10;
 
     // The IMU sensor object
     BNO055IMU imu;
@@ -233,13 +237,27 @@ public class IanAutonomousDrive extends LinearOpMode {
         }
     }
 
+    public abstract int getSetting();
+
+    public PID createPID() {
+        int setting=getSetting();
+//        return new PID(1,0,0,0,-0.3,-1,0.3,1,30);
+        return new PID(1,0,0,0,CalibrationStore.items[setting][0],CalibrationStore.items[setting][1],CalibrationStore.items[setting][2],CalibrationStore.items[setting][3],CalibrationStore.items[setting][4]);
+        // Without arm
+//        return new PID(1,0,0,0,-0.3,-.5,0.3,.5,30);
+    }
+
     public void turn(double desiredHeading) {
 
         // Start the logging of measured acceleration
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
-        PID rotationPID = new PID(1,0,0,0,-0.1,-9,0.1,9,90);
+        // With arm
+        PID rotationPID = createPID();
+
         rotationPID.reset();
+
+        long stableSince = System.currentTimeMillis();
 
         // Loop and update the dashboard
         do  {
@@ -250,17 +268,29 @@ public class IanAutonomousDrive extends LinearOpMode {
             telemetry.addData("Current Heading",  "%f", angles.firstAngle);
             telemetry.addData("Distance",  "%f", distance);
             telemetry.update();
-            encoderDrive(TURN_SPEED, distance, -distance, 4.0);
 
-        } while ((Math.abs((desiredHeading-angles.firstAngle))>3));
+            robot.leftDrive.setPower(distance);
+            robot.rightDrive.setPower(-distance);
+
+
+
+            // If we are farther than 3 degrees, then reset the time
+            if ((Math.abs(desiredHeading - angles.firstAngle) > ANGLE_TOLERANCE)) {
+                stableSince = System.currentTimeMillis();
+            } else {
+                robot.leftDrive.setPower(0);
+                robot.rightDrive.setPower(0);
+            }
+
+        } while ((System.currentTimeMillis()-stableSince)< STABILITY_THRESHOLD);
     }
 
-    private void openClaw() {
+    public void openClaw() {
         robot.leftClaw.setPosition(1);
         robot.rightClaw.setPosition(0);
     }
 
-    private void closeClaw() {
+    public void closeClaw() {
         robot.leftClaw.setPosition(0);
         robot.rightClaw.setPosition(1);
         sleep(1000);
@@ -272,27 +302,15 @@ public class IanAutonomousDrive extends LinearOpMode {
 
         setupMotors();
 
+        CalibrationStore.load();
+
         // Wait until we're told to go
         waitForStart();
 
-        openClaw();
-        move(-28.5);
-        closeClaw();
-        move(23.5);
-        openClaw();
-        move(4);
-        turn(-90);
-        move(30);
-        turn(-170);
-        move(45);
-        turn(-90);
-        move(-40);
-        turn(0);
-        move(33);
-        move(-5);
-        turn(-90);
-        move(40);
+        execute();
 
 
     }
+
+    public abstract void execute();
 }
