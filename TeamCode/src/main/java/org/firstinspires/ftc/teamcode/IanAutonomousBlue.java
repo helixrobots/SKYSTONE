@@ -15,9 +15,8 @@ public class IanAutonomousBlue extends IanAutonomousBase {
         openClaw();
         move(-28.5);
         closeClaw();
-        move(22.5);
+        move(20);
         openClaw();
-//        move(-4);
         move(4);
         turn(-90);
         move(30);
@@ -28,7 +27,9 @@ public class IanAutonomousBlue extends IanAutonomousBase {
         turn(0);
         move(33);
         move(-5);
-        turn(-90);
+        // Not quite 90 degrees so we get closer to the center of the bridge when we move
+        turn(-80);
+        moveToBridgePosition();
         move(40);
 
     }

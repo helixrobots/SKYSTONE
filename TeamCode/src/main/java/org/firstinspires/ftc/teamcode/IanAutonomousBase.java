@@ -26,6 +26,13 @@ public abstract class IanAutonomousBase extends LinearOpMode {
     public static final int STABILITY_THRESHOLD = 500;
     public static final int MEASURE_THRESHOLD = 10;
 
+    // Arm servos
+    private Servo armServoBase = null;
+    private Servo armServoMiddle = null;
+    private Servo gripperServoBase = null;
+    private Servo gripper = null;
+
+
     // The IMU sensor object
     BNO055IMU imu;
 
@@ -70,22 +77,12 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
     }
 
-    private Servo armServoBase = null;
-    private Servo armServoMiddle = null;
-    private Servo gripperServoBase = null;
-    private Servo gripper = null;
-
     public void setupMotors() {
 
         armServoBase = hardwareMap.get(Servo.class, "s1");
         armServoMiddle = hardwareMap.get(Servo.class, "s2");
         gripperServoBase = hardwareMap.get(Servo.class, "s3");
         gripper = hardwareMap.get(Servo.class, "s6");
-
-        armServoBase.setPosition(0.9);
-        armServoMiddle.setPosition(1.0);
-        gripperServoBase.setPosition(0.35);
-        gripper.setPosition(1);
 
         /*
          * Initialize the drive system variables.
@@ -321,18 +318,28 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
         CalibrationStore.load();
 
+        moveToBoxPosition();
+
         // Wait until we're told to go
         waitForStart();
-
-        armServoBase.setPosition(0);
-        armServoMiddle.setPosition(0.5);
-        gripperServoBase.setPosition(1);
-        gripper.setPosition(1);
-
 
         execute();
 
 
+    }
+
+    private void moveToBoxPosition() {
+        armServoBase.setPosition(0.9);
+        armServoMiddle.setPosition(1.0);
+        gripperServoBase.setPosition(0.35);
+        gripper.setPosition(1);
+    }
+
+    protected void moveToBridgePosition() {
+        armServoBase.setPosition(0);
+        armServoMiddle.setPosition(0);
+        gripperServoBase.setPosition(0);
+        gripper.setPosition(1);
     }
 
     public abstract void execute();
