@@ -323,6 +323,8 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         // Wait until we're told to go
         waitForStart();
 
+        moveToBridgePosition();
+
         execute();
 
 
