@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -69,7 +70,23 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
     }
 
+    private Servo armServoBase = null;
+    private Servo armServoMiddle = null;
+    private Servo gripperServoBase = null;
+    private Servo gripper = null;
+
     public void setupMotors() {
+
+        armServoBase = hardwareMap.get(Servo.class, "s1");
+        armServoMiddle = hardwareMap.get(Servo.class, "s2");
+        gripperServoBase = hardwareMap.get(Servo.class, "s3");
+        gripper = hardwareMap.get(Servo.class, "s6");
+
+        armServoBase.setPosition(0.9);
+        armServoMiddle.setPosition(1.0);
+        gripperServoBase.setPosition(0.35);
+        gripper.setPosition(1);
+
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
@@ -180,7 +197,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
      */
 
     public void move(double distance){
-        encoderDrive(DRIVE_SPEED, distance, distance, 10.0);
+        encoderDrive(DRIVE_SPEED, distance, distance, 1+Math.abs(distance)/15);
     }
 
     public void encoderDrive(double speed,
@@ -306,6 +323,12 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
         // Wait until we're told to go
         waitForStart();
+
+        armServoBase.setPosition(0);
+        armServoMiddle.setPosition(0.5);
+        gripperServoBase.setPosition(1);
+        gripper.setPosition(1);
+
 
         execute();
 

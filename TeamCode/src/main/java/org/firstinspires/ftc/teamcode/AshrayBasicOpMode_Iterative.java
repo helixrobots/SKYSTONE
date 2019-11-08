@@ -39,6 +39,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     final String ARM_CODE_READY_FOR_PICK_UP = "ready_pickup";
     final String ARM_CODE_PREP_FOR_TRANSPORT = "prep_transport";
     final String ARM_CODE_TRANSPORT = "transport";
+    final String ARM_CODE_FOLDING_POSITION = "fold";
     static final double BASE_ARM_LENGTH_IN_INCH = 9.875;
     static final double END_ARM_LENGTH_IN_INCH = 9.75;
     static final double JOYSTICK_TO_GRIPPER_POSITION_FACTOR = 2.5;
@@ -121,6 +122,12 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         rightClaw.setPosition(1);
     }
 
+    private void setArmAngles(int baseAngle, int middleAngle, int gripperAngle) {
+        List<Double> targetServoPositions = anglesInDegreeToArmServoPositions(
+                baseAngle, middleAngle, gripperAngle);
+        setArmPosition(targetServoPositions.get(0), targetServoPositions.get(1), targetServoPositions.get(2));
+    }
+
     private void setArmXYPosition(double x, double y) {
         /*
         Sets the servo positions given a target (x, y) position.  x must be greater than 0, for now.
@@ -192,7 +199,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         armServoBase.setPosition(armBaseNewPosition);
         armServoMiddle.setPosition(armMiddleNewPosition);
     }
-
+// Arm positions
     private void armPositions(String armPos) throws InterruptedException {
         if (armPos.equals(ARM_CODE_REST)) {
 //            setArmPosition();
@@ -206,8 +213,11 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             setArmXYPosition(11.0, 0.0);
         } else if (armPos.equals(ARM_CODE_TRANSPORT)) {
             setArmXYPosition(BASE_ARM_LENGTH_IN_INCH + END_ARM_LENGTH_IN_INCH - 0.1, -1.0);
+        } else if  (armPos.equals(ARM_CODE_FOLDING_POSITION)) {
+            setArmAngles(170, 170, -25);
         }
     }
+
 
     private List<Double> armServoPositionsToAnglesInDegree(double baseServoPosition,
                                                            double middleServoPosition) {
@@ -351,7 +361,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         // initialize arm position
         try {
-            armPositions(ARM_CODE_HOLDING);
+            armPositions(ARM_CODE_FOLDING_POSITION);
+            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -388,7 +399,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             turn = -gamepad1.right_stick_x / 1.5;
         } else {
             drive = -gamepad1.left_stick_y / 7.5;
-            turn = -gamepad1.right_stick_x / 7.5;
+            turn = -gamepad1.right_stick_x / 4.5;
         }
 
         leftPower = Range.clip(drive + turn, -1, 1);
@@ -484,6 +495,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             return;
         } else if (gamepad2.y) {
             armPositions(ARM_CODE_HOLDING);
+            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
+        }
+        if(gamepad1.a){
+            armPositions(ARM_CODE_FOLDING_POSITION);
             currentArmLoopState = ArmLoopState.RUNNING_PRESET;
         }
 
