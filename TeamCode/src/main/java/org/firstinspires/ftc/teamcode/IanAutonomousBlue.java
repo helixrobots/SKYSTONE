@@ -13,9 +13,9 @@ public class IanAutonomousBlue extends IanAutonomousBase {
     @Override
     public void execute() {
         openClaw();
-        move(-28.5);
+        move(-30);
         closeClaw();
-        move(20);
+        move(21.5);
         openClaw();
         move(4);
         turn(-90);

@@ -338,9 +338,9 @@ public abstract class IanAutonomousBase extends LinearOpMode {
     }
 
     protected void moveToBridgePosition() {
-        armServoBase.setPosition(0);
-        armServoMiddle.setPosition(0);
-        gripperServoBase.setPosition(0);
+        armServoBase.setPosition(0.85);
+        armServoMiddle.setPosition(0.33);
+        gripperServoBase.setPosition(0.5);
         gripper.setPosition(1);
     }
 
