@@ -21,11 +21,11 @@ public class IanAutonomousBlue extends IanAutonomousBase {
         turn(-90);
         move(30);
         turn(-170);
-        move(50);
+        move(95);
         turn(-90);
         move(-55);
         turn(0);
-        move(33);
+        move(75);
         move(-5);
         // Not quite 90 degrees so we get closer to the center of the bridge when we move
         turn(-80);

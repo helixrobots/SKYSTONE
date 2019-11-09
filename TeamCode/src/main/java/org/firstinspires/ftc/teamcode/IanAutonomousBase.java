@@ -261,6 +261,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 //        return new PID(1,0,0,0,-0.3,-.5,0.3,.5,30);
     }
 
+    private double normalizeAngle(double angle){
+
+        return (angle + 540.0) % 360.0 - 180.0;
+    }
     public void turn(double desiredHeading) {
 
         if (desiredHeading>180 || desiredHeading<-180) {
@@ -304,12 +308,12 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             }
 
             // THIS LINE CAN BE REMOVED IF ADJUSTING ANGLE SIGN CAUSES PROBLEMS
-            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
-
+//            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+            adjustedAngle = normalizeAngle(adjustedAngle);
             double distance = rotationPID.calculate(desiredHeading,(double)(adjustedAngle));
             telemetry.addData("Initial Heading",  "%f", desiredHeading);
             telemetry.addData("Current Heading",  "%f", angles.firstAngle);
-            telemetry.addData("Adujsted Heading",  "%f", adjustedAngle);
+            telemetry.addData("Adjusted Heading",  "%f", adjustedAngle);
             telemetry.addData("Distance",  "%f", distance);
             telemetry.update();
 
@@ -382,7 +386,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
     }
 
     protected void moveToBridgePosition() {
-        armServoBase.setPosition(0.85);
+        armServoBase.setPosition(0.8);
         armServoMiddle.setPosition(0.33);
         gripperServoBase.setPosition(0.5);
         gripper.setPosition(1);
