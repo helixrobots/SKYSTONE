@@ -263,6 +263,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
     public void turn(double desiredHeading) {
 
+        if (desiredHeading>180 || desiredHeading<-180) {
+            throw new RuntimeException("I can only turn from -180 to 180 degrees");
+        }
+
         // Start the logging of measured acceleration
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
@@ -273,13 +277,39 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
         long stableSince = System.currentTimeMillis();
 
+        boolean flipToPositive=false;
+        boolean flipToNegative=false;
+
         // Loop and update the dashboard
         do  {
             angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             gravity  = imu.getGravity();
-            double distance = rotationPID.calculate(desiredHeading,(double)(angles.firstAngle));
+            double adjustedAngle = angles.firstAngle;
+
+
+            if (adjustedAngle>90) {
+                flipToPositive = true;
+            }
+
+            if (adjustedAngle<-90) {
+                flipToNegative = true;
+            }
+
+            if (adjustedAngle<90) {
+                flipToPositive = false;
+            }
+
+            if (adjustedAngle>-90) {
+                flipToNegative = false;
+            }
+
+            // THIS LINE CAN BE REMOVED IF ADJUSTING ANGLE SIGN CAUSES PROBLEMS
+            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+
+            double distance = rotationPID.calculate(desiredHeading,(double)(adjustedAngle));
             telemetry.addData("Initial Heading",  "%f", desiredHeading);
             telemetry.addData("Current Heading",  "%f", angles.firstAngle);
+            telemetry.addData("Adujsted Heading",  "%f", adjustedAngle);
             telemetry.addData("Distance",  "%f", distance);
             telemetry.update();
 
@@ -287,9 +317,8 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             robot.rightDrive.setPower(-distance);
 
 
-
             // If we are farther than 3 degrees, then reset the time
-            if ((Math.abs(desiredHeading - angles.firstAngle) > ANGLE_TOLERANCE)) {
+            if ((Math.abs(desiredHeading - adjustedAngle) > ANGLE_TOLERANCE)) {
                 stableSince = System.currentTimeMillis();
             } else {
                 robot.leftDrive.setPower(0);
@@ -297,6 +326,21 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             }
 
         } while ((System.currentTimeMillis()-stableSince)< STABILITY_THRESHOLD);
+    }
+
+    private double getAdjustedAngle(boolean flipToPositive, boolean flipToNegative, double adjustedAngle) {
+        if (flipToPositive) {
+            if (adjustedAngle<0) {
+                adjustedAngle = 360 + adjustedAngle;
+            }
+        }
+
+        if (flipToNegative) {
+            if (adjustedAngle>0) {
+                adjustedAngle = adjustedAngle - 360;
+            }
+        }
+        return adjustedAngle;
     }
 
     public void openClaw() {
