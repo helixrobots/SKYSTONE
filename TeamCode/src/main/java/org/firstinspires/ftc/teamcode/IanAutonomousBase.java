@@ -255,9 +255,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
     public PID createPID() {
         int setting=getSetting();
-//        return new PID(1,0,0,0,-0.3,-1,0.3,1,30);
         return new PID(1,0,0,0,CalibrationStore.items[setting][0],CalibrationStore.items[setting][1],CalibrationStore.items[setting][2],CalibrationStore.items[setting][3],CalibrationStore.items[setting][4]);
-        // Without arm
+//        With arm
+//        return new PID(1,0,0,0,-0.3,-1,0.3,1,30);
+//        Without arm
 //        return new PID(1,0,0,0,-0.3,-.5,0.3,.5,30);
     }
 
@@ -291,30 +292,29 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             double adjustedAngle = angles.firstAngle;
 
 
-            if (adjustedAngle>90) {
+            if (!flipToNegative && adjustedAngle>90) {
                 flipToPositive = true;
             }
 
-            if (adjustedAngle<-90) {
+            if (!flipToPositive && adjustedAngle<-90) {
                 flipToNegative = true;
             }
 
-            if (adjustedAngle<90) {
+            if (adjustedAngle>0 && adjustedAngle<90) {
                 flipToPositive = false;
             }
 
-            if (adjustedAngle>-90) {
+            if (adjustedAngle<0 && adjustedAngle>-90) {
                 flipToNegative = false;
             }
 
-            // THIS LINE CAN BE REMOVED IF ADJUSTING ANGLE SIGN CAUSES PROBLEMS
-//            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
-            adjustedAngle = normalizeAngle(adjustedAngle);
+            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+
             double distance = rotationPID.calculate(desiredHeading,(double)(adjustedAngle));
             telemetry.addData("Initial Heading",  "%f", desiredHeading);
             telemetry.addData("Current Heading",  "%f", angles.firstAngle);
-            telemetry.addData("Adjusted Heading",  "%f", adjustedAngle);
-            telemetry.addData("Distance",  "%f", distance);
+            telemetry.addData("Adjusted Heading",  "%f, %b , %b", adjustedAngle, flipToPositive, flipToNegative);
+            telemetry.addData("Distance/Power",  "%f", distance);
             telemetry.update();
 
             robot.leftDrive.setPower(distance);
