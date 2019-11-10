@@ -378,7 +378,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
     }
 
-    private void moveToBoxPosition() {
+    void moveToBoxPosition() {
         armServoBase.setPosition(0.9);
         armServoMiddle.setPosition(1.0);
         gripperServoBase.setPosition(0.35);
