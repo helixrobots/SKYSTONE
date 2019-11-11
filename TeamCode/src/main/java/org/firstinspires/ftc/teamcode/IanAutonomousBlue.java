@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name="Ian Autonomous Blue", group="Helix")
+@Autonomous(name="Ian Autonomous Red", group="Helix")
 public class IanAutonomousBlue extends IanAutonomousBase {
 
     @Override
@@ -20,12 +20,12 @@ public class IanAutonomousBlue extends IanAutonomousBase {
         move(4);
         turn(-90);
         move(30);
-        turn(-170);
-        move(95);
-        turn(-90);
-        move(-55);
+        turn(-180);
+        move(35);
+        turn(90);
+        move(45);
         turn(0);
-        move(75);
+        move(35);
         move(-5);
         // Not quite 90 degrees so we get closer to the center of the bridge when we move
         turn(-80);

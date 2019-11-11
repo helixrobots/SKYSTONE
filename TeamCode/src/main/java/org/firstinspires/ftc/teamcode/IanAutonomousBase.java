@@ -194,7 +194,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
      */
 
     public void move(double distance){
-        encoderDrive(DRIVE_SPEED, distance, distance, 1+Math.abs(distance)/15);
+        encoderDrive(DRIVE_SPEED, distance, distance, 0.5+Math.abs(distance)/15);
     }
 
     public void encoderDrive(double speed,
@@ -371,7 +371,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         // Wait until we're told to go
         waitForStart();
 
-        moveToBridgePosition();
+//        moveToBridgePosition();
 
         execute();
 

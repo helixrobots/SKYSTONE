@@ -355,17 +355,18 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         arm_up_down.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
-
+        String xf = "rohit";
         armServoMiddle.setDirection(Servo.Direction.REVERSE);
         currentArmLoopState = ArmLoopState.NORMAL;
-
+        telemetry.addData("Dont fail ", xf);
+        telemetry.update();
         // initialize arm position
-        try {
-            armPositions(ARM_CODE_FOLDING_POSITION);
-            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            armPositions(ARM_CODE_FOLDING_POSITION);
+//            currentArmLoopState = ArmLoopState.RUNNING_PRESET;
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         gripper.setPosition(0);
     }
 
@@ -410,8 +411,8 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
     }
 
-    double armBaseNewPosition = 0.5;
-    double armMiddleNewPosition = 0.5;
+    double armBaseNewPosition = 0.9;
+    double armMiddleNewPosition = 1.0;
 
 
     private double gripperAngleCalculator(double baseServoAngleInDegrees, double middleServoAngleInDegrees) {
@@ -484,7 +485,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
             // button A
             // armPositions(ARM_CODE_PICK_UP);
             armPositions(ARM_CODE_READY_FOR_PICK_UP);
-            gripper.setPosition(1);
+            gripper.setPosition(0);
             gripperHold = true;
             currentArmLoopState = ArmLoopState.RUNNING_PRESET;
             return;
@@ -526,7 +527,7 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         // logic for gripper base movement - x and y
 
-        double gamepad2_X = gamepad2.right_stick_x / 50;
+        double gamepad2_X = invert(gamepad2.right_stick_x) / 50;
         double gamepad2_Y = -gamepad2.right_stick_y / 50;
 
         telemetry.addData("Gamepad2_X", gamepad2_X);
@@ -615,6 +616,10 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
 
         armServoBase.setPosition(armBaseNewPosition);
         armServoMiddle.setPosition(armMiddleNewPosition);
+    }
+
+    protected double invert(float right_stick_x) {
+        return right_stick_x;
     }
 
     @Override
