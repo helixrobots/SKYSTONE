@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.ftccommon.internal.ProgramAndManageActivity;
 
-@TeleOp(name = "Skynet", group = "Helix")
+@TeleOp(name = "Skynet (Blue)", group = "Helix")
 public class Program extends OpMode {
 
     int pc = 0;
