@@ -90,9 +90,9 @@ public abstract class IanAutonomousBase extends LinearOpMode {
          */
         robot.init(hardwareMap);
 
-        // Send telemetry message to signify robot waiting;
-        telemetry.addData("Status", "Resetting Encoders");    //
-        telemetry.update();
+//        // Send telemetry message to signify robot waiting;
+//        telemetry.addData("Status", "Resetting Encoders");    //
+//        telemetry.update();
 
         robot.leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -100,11 +100,11 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // Send telemetry message to indicate successful Encoder reset
-        telemetry.addData("Path0",  "Starting at %7d :%7d",
-                robot.leftDrive.getCurrentPosition(),
-                robot.rightDrive.getCurrentPosition());
-        telemetry.update();
+//        // Send telemetry message to indicate successful Encoder reset
+//        telemetry.addData("Path0",  "Starting at %7d :%7d",
+//                robot.leftDrive.getCurrentPosition(),
+//                robot.rightDrive.getCurrentPosition());
+//        telemetry.update();
     }
 
 
@@ -204,7 +204,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         int newRightTarget;
 
         // Ensure that the opmode is still active
-        if (opModeIsActive()) {
+        if (isSkynetActive()) {
 
             // Determine new target position, and pass to motor controller
             newLeftTarget = robot.leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
@@ -227,7 +227,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() &&
+            while (isSkynetActive() &&
                     (runtime.seconds() < timeoutS) &&
                     (robot.leftDrive.isBusy() && robot.rightDrive.isBusy())) {
 
@@ -249,6 +249,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
             //  sleep(250);   // optional pause after each move
         }
+    }
+
+    protected boolean isSkynetActive() {
+        return opModeIsActive();
     }
 
     public abstract int getSetting();

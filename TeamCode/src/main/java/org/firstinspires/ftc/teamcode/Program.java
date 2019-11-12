@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.ftccommon.internal.ProgramAndManageActivity;
 
-@TeleOp(name = "Skynet (Blue)", group = "Helix")
+@TeleOp(name = "Skynet (Red)", group = "Helix")
 public class Program extends OpMode {
 
     int pc = 0;
@@ -25,14 +25,14 @@ public class Program extends OpMode {
         if (gamepad1.right_bumper) {
             saved=ProgramStore.save();
         }
-        if(gamepad1.left_bumper){
+        if(dpadLeftBumper()){
             program++;
             program = program % ProgramStore.MAX_PROGRAMS;
             ic=0;
             pc=0;
         }
 
-        if(gamepad1.y){
+        if(dpadY()){
             int opCode = ProgramStore.getOpCode(program,pc);
             if (ic==0) {
                 opCode++;
@@ -46,7 +46,7 @@ public class Program extends OpMode {
             }
 
             saved=false;
-        }else if(gamepad1.a){
+        }else if(dpadA()){
             int opCode = ProgramStore.getOpCode(program, pc);
             if (ic==0) {
                 opCode--;
@@ -61,13 +61,13 @@ public class Program extends OpMode {
             }
             saved=false;
         }
-        if(gamepad1.dpad_down){
+        if(dpadDown()){
             int opCode = ProgramStore.getOpCode(program,pc);
             if (opCode!=ProgramStore.END_OF_LINE) {
                 pc++;
                 ic=0;
             }
-        }else if(gamepad1.dpad_up) {
+        }else if(dpadUp()) {
             pc--;
             if (pc < 0) {
                 pc = 0;
@@ -76,10 +76,10 @@ public class Program extends OpMode {
             }
         }
 
-        if (gamepad1.dpad_left) {
+        if (dpadLeft()) {
             ic=0;
         }
-        if (gamepad1.dpad_right) {
+        if (dpadRight()) {
             // Only allow this if we already have an instruction
             if (ProgramStore.getOpCode(program,pc)!=ProgramStore.END_OF_LINE) {
                 ic = 1;
@@ -148,6 +148,34 @@ public class Program extends OpMode {
             }
         }
 
+    }
+
+    protected boolean dpadLeftBumper() {
+        return gamepad1.left_bumper;
+    }
+
+    protected boolean dpadA() {
+        return gamepad1.a;
+    }
+
+    protected boolean dpadY() {
+        return gamepad1.y;
+    }
+
+    protected boolean dpadRight() {
+        return gamepad1.dpad_right;
+    }
+
+    protected boolean dpadLeft() {
+        return gamepad1.dpad_left;
+    }
+
+    protected boolean dpadDown() {
+        return gamepad1.dpad_down;
+    }
+
+    protected boolean dpadUp() {
+        return gamepad1.dpad_up;
     }
 
     private String renderInstruction(int programIndex, int instructionPointer,int editingIndex) {
