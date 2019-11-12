@@ -15,7 +15,7 @@ import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURN;
 
 @Autonomous(name="Ian Autonomous Skynet Red", group="Helix")
 
-public class IanAutonomousSkynet extends IanAutonomousBase {
+public class IanAutonomousSkynetRed extends IanAutonomousBase {
 
     @Override
     public int getSetting() {
