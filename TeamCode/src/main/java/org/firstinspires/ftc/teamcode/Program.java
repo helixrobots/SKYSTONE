@@ -89,7 +89,7 @@ public class Program extends OpMode {
         if (gamepad1.b) {
             int activeProgram = ProgramStore.getActive();
             activeProgram++;
-            if (activeProgram>ProgramStore.MAX_PROGRAMS) {
+            if (activeProgram>=ProgramStore.MAX_PROGRAMS) {
                 activeProgram=0;
             }
             ProgramStore.setActive(activeProgram);
@@ -99,7 +99,7 @@ public class Program extends OpMode {
         if (gamepad1.x) {
             int activeProgram = ProgramStore.getActive();
             activeProgram--;
-            if (activeProgram==0) {
+            if (activeProgram < 0) {
                 activeProgram = ProgramStore.MAX_PROGRAMS -1;
             }
             ProgramStore.setActive(activeProgram);

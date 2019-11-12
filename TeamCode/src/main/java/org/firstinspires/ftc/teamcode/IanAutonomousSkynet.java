@@ -12,7 +12,8 @@ import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_OPENCLAW;
 import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_PAUSE;
 import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURN;
 
-@Autonomous(name="Ian Autonomous Skynet", group="Helix")
+
+@Autonomous(name="Ian Autonomous Skynet Red", group="Helix")
 
 public class IanAutonomousSkynet extends IanAutonomousBase {
 
