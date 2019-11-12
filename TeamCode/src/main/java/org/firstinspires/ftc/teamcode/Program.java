@@ -32,7 +32,7 @@ public class Program extends OpMode {
             pc=0;
         }
 
-        if(gamepad1.dpad_up){
+        if(gamepad1.y){
             int opCode = ProgramStore.getOpCode(program,pc);
             if (ic==0) {
                 opCode++;
@@ -46,7 +46,7 @@ public class Program extends OpMode {
             }
 
             saved=false;
-        }else if(gamepad1.dpad_down){
+        }else if(gamepad1.a){
             int opCode = ProgramStore.getOpCode(program, pc);
             if (ic==0) {
                 opCode--;
@@ -61,13 +61,13 @@ public class Program extends OpMode {
             }
             saved=false;
         }
-        if(gamepad1.a){
+        if(gamepad1.dpad_down){
             int opCode = ProgramStore.getOpCode(program,pc);
-            if (opCode!=-1) {
+            if (opCode!=ProgramStore.END_OF_LINE) {
                 pc++;
                 ic=0;
             }
-        }else if(gamepad1.y) {
+        }else if(gamepad1.dpad_up) {
             pc--;
             if (pc < 0) {
                 pc = 0;
@@ -81,7 +81,7 @@ public class Program extends OpMode {
         }
         if (gamepad1.dpad_right) {
             // Only allow this if we already have an instruction
-            if (ProgramStore.getOpCode(program,pc)!=-1) {
+            if (ProgramStore.getOpCode(program,pc)!=ProgramStore.END_OF_LINE) {
                 ic = 1;
             }
         }
@@ -99,7 +99,7 @@ public class Program extends OpMode {
         if (gamepad1.x) {
             int activeProgram = ProgramStore.getActive();
             activeProgram--;
-            if (activeProgram < 0) {
+            if (activeProgram<0) {
                 activeProgram = ProgramStore.MAX_PROGRAMS -1;
             }
             ProgramStore.setActive(activeProgram);
@@ -113,7 +113,7 @@ public class Program extends OpMode {
         if (gamepad1.left_stick_button) {
             ProgramStore.delete(program,pc);
             int opCode = ProgramStore.getOpCode(program,pc);
-            if (opCode==-1) {
+            if (opCode==ProgramStore.END_OF_LINE) {
                 pc--;
                 if (pc<0) {
                     pc=0;
@@ -122,36 +122,21 @@ public class Program extends OpMode {
             saved=false;
         }
 
-        telemetry.addData("Active Program",ProgramStore.getActive());
-        telemetry.addData("Editing Program", program);
         StringBuffer out = new StringBuffer();
-        // Basic style!
-        //
-        out.append((pc+1)*10);
-        out.append(" ");
-        if (ic==0) {
-            out.append("->");
-        }
-        int opCode = ProgramStore.getOpCode(program,pc);
-        if (opCode==-1) {
-            out.append("???");
-        } else {
-            out.append(ProgramStore.OPERATIONS[opCode]);
-        }
-        if (ic==0) {
-            out.append("<-");
-        }
-        out.append(" ");
-        if (ic==1) {
-            out.append("->");
-        }
-        out.append(ProgramStore.getParameter(program,pc));
-        if (ic==1) {
-            out.append("<-");
+
+        int lines=2;
+        for (int l=pc-lines;l<=pc+lines;l++) {
+            if (l>=0 && (ProgramStore.getOpCode(program,l)==ProgramStore.END_OF_LINE)) {
+                // Now a TRON reference ;)
+                out.append("- END OF LINE -");
+                break;
+            } else  {
+                out.append(renderInstruction(program, l, l == pc ? ic : -1));
+                out.append("\n");
+            }
         }
 
-        telemetry.addData("Saved",saved);
-        telemetry.addData("I", out.toString());
+        telemetry.addData("Editing","%d Active : %d Saved : %b \n%s",program,ProgramStore.getActive(),saved,out.toString());
         telemetry.update();
 
         while (gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.left_bumper || gamepad1.right_bumper || gamepad1.y || gamepad1.a || gamepad1.x || gamepad1.b || gamepad1.left_stick_button || gamepad1.right_stick_button) {
@@ -163,6 +148,36 @@ public class Program extends OpMode {
             }
         }
 
+    }
+
+    private String renderInstruction(int programIndex, int instructionPointer,int editingIndex) {
+        StringBuffer out = new StringBuffer();
+        // Basic style!
+        //
+        ProgramStore.Instruction instruction = ProgramStore.getInstruction(programIndex,instructionPointer);
+        if (instruction==null) {
+            return "";
+        } else {
+            out.append((instructionPointer + 1) * 10);
+            out.append(" ");
+            if (editingIndex == 0) {
+                out.append("[");
+            }
+            int opCode = instruction.opCode;
+            out.append(ProgramStore.OPERATIONS[opCode]);
+            if (editingIndex == 0) {
+                out.append("]");
+            }
+            out.append(" ");
+            if (editingIndex == 1) {
+                out.append("[");
+            }
+            out.append(instruction.parameter);
+            if (editingIndex == 1) {
+                out.append("]");
+            }
+            return out.toString();
+        }
     }
 }
 

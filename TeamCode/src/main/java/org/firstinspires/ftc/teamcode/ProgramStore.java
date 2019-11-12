@@ -14,6 +14,8 @@ import java.util.List;
 import static org.firstinspires.ftc.teamcode.CalibrationStore.MAX_SETTINGS;
 
 public class ProgramStore {
+
+    public static final int END_OF_LINE = -1;
     public static final int MAX_PROGRAMS = 10;
     private static final String PROGRAMS_FILE = "programs.txt";
     public static List<Instruction>[] _programs = new List[MAX_PROGRAMS];
@@ -113,7 +115,7 @@ public class ProgramStore {
             Instruction instruction = program.get(pc);
             return instruction.opCode;
         } else {
-            return -1;
+            return ProgramStore.END_OF_LINE;
         }
     }
 
@@ -177,6 +179,14 @@ public class ProgramStore {
         if (pc>=0 && pc<program.size()) {
             program.remove(pc);
         }
+    }
+
+    public static Instruction getInstruction(int programIndex,int pc) {
+        List<Instruction> program = _programs[programIndex];
+        if (pc>=0 && pc<program.size()) {
+            return program.get(pc);
+        }
+        return null;
     }
 
     static class Instruction {

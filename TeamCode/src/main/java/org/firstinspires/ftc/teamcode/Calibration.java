@@ -44,10 +44,10 @@ public class Calibration  extends OpMode {
             setting = setting % CalibrationStore.MAX_SETTINGS;
         }
 
-        if(gamepad1.dpad_up){
+        if(gamepad1.y){
             CalibrationStore.items[setting][item]+=step[item];
             saved=false;
-        }else if(gamepad1.dpad_down){
+        }else if(gamepad1.a){
             CalibrationStore.items[setting][item]-=step[item];
             saved=false;
         }
@@ -78,7 +78,7 @@ public class Calibration  extends OpMode {
         telemetry.addData("Saved",saved);
         telemetry.update();
 
-        while (gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.left_bumper || gamepad1.right_bumper) {
+        while (gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.left_bumper || gamepad1.right_bumper || gamepad1.y || gamepad1.a || gamepad1.x || gamepad1.b || gamepad1.left_stick_button || gamepad1.right_stick_button) {
 
             try {
                 Thread.sleep(50);
