@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.ftccommon.internal.ProgramAndManageActivity;
 
 @TeleOp(name = "Skynet T-1 (Red)", group = "Helix")
 public class SkynetT1Program extends Program {
@@ -31,60 +28,137 @@ public class SkynetT1Program extends Program {
 
     @Override
     public void loop() {
-        if (gamepad1.dpad_up) {
-            int opCode = ProgramStore.getOpCode(program,pc);
-            double parameter = 0;
-            if (opCode == ProgramStore.OPCODE_MOVE) {
-                parameter = ProgramStore.getParameter(program,pc);
-            } else {
-                if (opCode!=ProgramStore.END_OF_LINE) {
-                    pc++;
+
+        if (mode==MODE_NORMAL) {
+            if (gamepad1.dpad_up) {
+                int opCode = ProgramStore.getOpCode(program,pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_MOVE) {
+                    parameter = ProgramStore.getParameter(program,pc);
+                } else {
+                    if (opCode!=ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_MOVE);
                 }
-                ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_MOVE);
+                parameter+=MOVE_STEP;
+                ProgramStore.setParameter(program,pc,parameter);
+                t1.move(MOVE_STEP);
             }
-            parameter+=MOVE_STEP;
-            ProgramStore.setParameter(program,pc,parameter);
-            t1.move(MOVE_STEP);
-        }
-        if (gamepad1.dpad_left) {
-            int opCode = ProgramStore.getOpCode(program,pc);
-            if (opCode != ProgramStore.OPCODE_TURN) {
-                if (opCode!=ProgramStore.END_OF_LINE) {
-                    pc++;
+
+            if (gamepad1.dpad_left) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                if (opCode != ProgramStore.OPCODE_HEAD) {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_HEAD);
                 }
-                ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_TURN);
+                heading += TURN_STEP;
+                ProgramStore.setParameter(program, pc, heading);
+                t1.head(heading);
             }
-            heading+=TURN_STEP;
-            ProgramStore.setParameter(program,pc,heading);
-            t1.turn(heading);
-        }
-        if (gamepad1.dpad_down) {
-            int opCode = ProgramStore.getOpCode(program,pc);
-            double parameter = 0;
-            if (opCode == ProgramStore.OPCODE_MOVE) {
-                parameter = ProgramStore.getParameter(program,pc);
-            } else {
-                if (opCode!=ProgramStore.END_OF_LINE) {
-                    pc++;
+            if (gamepad1.dpad_down) {
+                int opCode = ProgramStore.getOpCode(program,pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_MOVE) {
+                    parameter = ProgramStore.getParameter(program,pc);
+                } else {
+                    if (opCode!=ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_MOVE);
                 }
-                ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_MOVE);
+                parameter-=MOVE_STEP;
+                ProgramStore.setParameter(program,pc,parameter);
+                t1.move(-MOVE_STEP);
             }
-            parameter-=MOVE_STEP;
-            ProgramStore.setParameter(program,pc,parameter);
-            t1.move(-MOVE_STEP);
-        }
-        if (gamepad1.dpad_right) {
-            int opCode = ProgramStore.getOpCode(program,pc);
-            if (opCode != ProgramStore.OPCODE_TURN) {
-                if (opCode!=ProgramStore.END_OF_LINE) {
-                    pc++;
+            if (gamepad1.dpad_right) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                if (opCode != ProgramStore.OPCODE_HEAD) {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_HEAD);
                 }
-                ProgramStore.setOpCode(program,pc,ProgramStore.OPCODE_TURN);
+                heading -= TURN_STEP;
+                ProgramStore.setParameter(program, pc, heading);
+                t1.head(heading);
             }
-            heading-=TURN_STEP;
-            ProgramStore.setParameter(program,pc,heading);
-            t1.turn(heading);
+
+        } else if (mode==MODE_TURN) {
+
+            if (gamepad1.dpad_down) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_TURNRIGHT) {
+                    parameter = ProgramStore.getParameter(program, pc);
+
+                }else {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNRIGHT);
+                }
+                parameter -= MOVE_STEP;
+                ProgramStore.setParameter(program, pc, parameter);
+                t1.turnRight(-MOVE_STEP);
+            }
+            if (gamepad1.dpad_left) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_TURNLEFT) {
+                    parameter = ProgramStore.getParameter(program, pc);
+
+                }else {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNLEFT);
+                }
+                parameter += MOVE_STEP;
+                ProgramStore.setParameter(program, pc, parameter);
+                t1.turnLeft(MOVE_STEP);
+
+            }
+            if (gamepad1.dpad_up) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_TURNLEFT) {
+                    parameter = ProgramStore.getParameter(program, pc);
+
+                }else {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNLEFT);
+                }
+                parameter -= MOVE_STEP;
+                ProgramStore.setParameter(program, pc, parameter);
+                t1.turnLeft(-MOVE_STEP);
+            }
+            if (gamepad1.dpad_right) {
+                int opCode = ProgramStore.getOpCode(program, pc);
+                double parameter = 0;
+                if (opCode == ProgramStore.OPCODE_TURNRIGHT) {
+                    parameter = ProgramStore.getParameter(program, pc);
+
+                }else {
+                    if (opCode != ProgramStore.END_OF_LINE) {
+                        pc++;
+                    }
+                    ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNRIGHT);
+                }
+                parameter += MOVE_STEP;
+                ProgramStore.setParameter(program, pc, parameter);
+                t1.turnRight(MOVE_STEP);
+            }
+
         }
+
+
+
+
         if (gamepad1.y) {
             int opCode = ProgramStore.getOpCode(program,pc);
             if (opCode!=ProgramStore.END_OF_LINE && opCode!=ProgramStore.OPCODE_OPENCLAW) {
@@ -103,9 +177,34 @@ public class SkynetT1Program extends Program {
             ProgramStore.setParameter(program,pc,0);
             t1.closeClaw();
         }
+
+        if (gamepad1.b) {
+            mode++;
+            if (mode>=MODES.length) {
+                mode = MODES.length-1;
+            }
+        }
+
+        if (gamepad1.x) {
+            mode--;
+            if (mode <= 0) {
+                mode=0;
+            }
+        }
+
         super.loop();
     }
 
+
+    @Override
+    protected boolean dpadB() {
+        return false;
+    }
+
+    @Override
+    protected boolean dpadX() {
+        return false;
+    }
 
     @Override
     protected boolean dpadLeftBumper() {

@@ -8,10 +8,15 @@ import org.firstinspires.ftc.ftccommon.internal.ProgramAndManageActivity;
 @TeleOp(name = "Skynet (Red)", group = "Helix")
 public class Program extends OpMode {
 
+    protected final static String[] MODES={"Normal","Turn"};
+    protected final static int MODE_NORMAL=0;
+    protected final static int MODE_TURN=1;
+
     int pc = 0;
     int ic = 0;
     boolean saved=true;
     int program=0;
+    int mode=0;
 
 
     @Override
@@ -86,7 +91,7 @@ public class Program extends OpMode {
             }
         }
 
-        if (gamepad1.b) {
+        if (dpadB()) {
             int activeProgram = ProgramStore.getActive();
             activeProgram++;
             if (activeProgram>=ProgramStore.MAX_PROGRAMS) {
@@ -96,7 +101,7 @@ public class Program extends OpMode {
             saved=false;
         }
 
-        if (gamepad1.x) {
+        if (dpadX()) {
             int activeProgram = ProgramStore.getActive();
             activeProgram--;
             if (activeProgram<0) {
@@ -124,7 +129,7 @@ public class Program extends OpMode {
 
         StringBuffer out = new StringBuffer();
 
-        int lines=2;
+        int lines=3;
         for (int l=pc-lines;l<=pc+lines;l++) {
             if (l>=0 && (ProgramStore.getOpCode(program,l)==ProgramStore.END_OF_LINE)) {
                 // Now a TRON reference ;)
@@ -136,18 +141,28 @@ public class Program extends OpMode {
             }
         }
 
-        telemetry.addData("Editing","%d Active : %d Saved : %b \n%s",program,ProgramStore.getActive(),saved,out.toString());
+        telemetry.addData("Editing","%d Active : %d Saved : %b Mode : %s \n%s",program,ProgramStore.getActive(),saved,MODES[mode],out.toString());
         telemetry.update();
 
-        while (gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.left_bumper || gamepad1.right_bumper || gamepad1.y || gamepad1.a || gamepad1.x || gamepad1.b || gamepad1.left_stick_button || gamepad1.right_stick_button) {
+        int timeout=25;
+        while (timeout>0 && (gamepad1.dpad_right || gamepad1.dpad_left || gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.left_bumper || gamepad1.right_bumper || gamepad1.y || gamepad1.a || gamepad1.x || gamepad1.b || gamepad1.left_stick_button || gamepad1.right_stick_button)) {
 
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            timeout--;
         }
 
+    }
+
+    protected boolean dpadB() {
+        return gamepad1.b;
+    }
+
+    protected boolean dpadX() {
+        return gamepad1.x;
     }
 
     protected boolean dpadLeftBumper() {

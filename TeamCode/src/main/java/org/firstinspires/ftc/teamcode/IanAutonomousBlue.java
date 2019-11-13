@@ -11,9 +11,9 @@ public class IanAutonomousBlue extends IanAutonomousRed {
     }
 
     @Override
-    public void turn(double desiredHeading) {
-        // Just turn in the opposite direction
-        super.turn(-desiredHeading);
+    public void head(double desiredHeading) {
+        // Just head in the opposite direction
+        super.head(-desiredHeading);
     }
 
 }

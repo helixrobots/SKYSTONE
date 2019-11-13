@@ -194,10 +194,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
      */
 
     public void move(double distance){
-        encoderDrive(DRIVE_SPEED, distance, distance, 0.5+Math.abs(distance)/15);
+        encoderDrive(DRIVE_SPEED, DRIVE_SPEED, distance, distance, 0.5+Math.abs(distance)/15);
     }
 
-    public void encoderDrive(double speed,
+    public void encoderDrive(double leftSpeed,double rightSpeed,
                              double leftInches, double rightInches,
                              double timeoutS) {
         int newLeftTarget;
@@ -218,8 +218,8 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.leftDrive.setPower(Math.abs(speed));
-            robot.rightDrive.setPower(Math.abs(speed));
+            robot.leftDrive.setPower(Math.abs(leftSpeed));
+            robot.rightDrive.setPower(Math.abs(rightSpeed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -270,10 +270,10 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
         return (angle + 540.0) % 360.0 - 180.0;
     }
-    public void turn(double desiredHeading) {
+    public void head(double desiredHeading) {
 
         if (desiredHeading>180 || desiredHeading<-180) {
-            throw new RuntimeException("I can only turn from -180 to 180 degrees");
+            throw new RuntimeException("I can only head from -180 to 180 degrees");
         }
 
         // Start the logging of measured acceleration
@@ -394,6 +394,14 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         armServoMiddle.setPosition(0.33);
         gripperServoBase.setPosition(0.5);
         gripper.setPosition(1);
+    }
+
+    public void turnLeft(double distance) {
+        encoderDrive(DRIVE_SPEED,DRIVE_SPEED/3,distance,distance/3,0.5+Math.abs(distance)/15);
+    }
+
+    public void turnRight(double distance) {
+        encoderDrive(DRIVE_SPEED/3,DRIVE_SPEED,distance/3,distance,0.5+Math.abs(distance)/15);
     }
 
     public abstract void execute();

@@ -41,10 +41,10 @@ public class PID {
      * @param ki The Integral Constant
      * @param kd The Derivative Constant
      * @param bias This can be set to a very low value or even zero? (0.001?)
-     * @param minReversePower The Min power that will make the motor turn in reverse
-     * @param maxReversePower The Max power that will make the motor turn in reverse the fastest
-     * @param minForwardPower Tee Min power that will make the motor turn forward
-     * @param maxForwardPower The Max power that will make the robot turn forward the fastest
+     * @param minReversePower The Min power that will make the motor head in reverse
+     * @param maxReversePower The Max power that will make the motor head in reverse the fastest
+     * @param minForwardPower Tee Min power that will make the motor head forward
+     * @param maxForwardPower The Max power that will make the robot head forward the fastest
      * @param maxDelta The max delta between the error and the target (if the difference between the target and error is more than this delta, max power will be used)
      */
     public PID(double kp, double ki, double kd, double bias, double minReversePower, double maxReversePower, double minForwardPower, double maxForwardPower, double maxDelta) {

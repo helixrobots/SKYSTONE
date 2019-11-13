@@ -18,17 +18,17 @@ public class IanAutonomousRed extends IanAutonomousBase {
         move(21.5);
         openClaw();
         move(4);
-        turn(-90);
+        head(-90);
         move(30);
-        turn(-180);
+        head(-180);
         move(35);
-        turn(90);
+        head(90);
         move(45);
-        turn(0);
+        head(0);
         move(35);
         move(-5);
         // Not quite 90 degrees so we get closer to the center of the bridge when we move
-        turn(-80);
+        head(-80);
         move(40);
 
     }

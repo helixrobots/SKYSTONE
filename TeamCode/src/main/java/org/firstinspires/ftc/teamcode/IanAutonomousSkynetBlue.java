@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class IanAutonomousSkynetBlue extends IanAutonomousSkynetRed {
 
     @Override
-    public void turn(double desiredHeading) {
-        // Just turn in the opposite direction
-        super.turn(-desiredHeading);
+    public void head(double desiredHeading) {
+        // Just head in the opposite direction
+        super.head(-desiredHeading);
     }
 }

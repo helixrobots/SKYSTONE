@@ -19,16 +19,18 @@ public class ProgramStore {
     public static final int MAX_PROGRAMS = 10;
     private static final String PROGRAMS_FILE = "programs.txt";
     public static List<Instruction>[] _programs = new List[MAX_PROGRAMS];
-    public static final String[] OPERATIONS = {"MOVE","TURN","OPENCLAW","CLOSECLAW","BOX","BRIDGE","PAUSE"};
+    public static final String[] OPERATIONS = {"MOVE","HEAD","OPENCLAW","CLOSECLAW","BOX","BRIDGE","PAUSE","TURNLEFT","TURNRIGHT"};
+    public static final double[] STEP = {0.5,5,0,0,0,0,500,0.5,0.5};
     public static final int OPCODE_MOVE=0;
-    public static final int OPCODE_TURN=1;
+    public static final int OPCODE_HEAD =1;
     public static final int OPCODE_OPENCLAW=2;
     public static final int OPCODE_CLOSECLAW=3;
     public static final int OPCODE_BOX=4;
     public static final int OPCODE_BRIDGE=5;
     public static final int OPCODE_PAUSE=6;
+    public static final int OPCODE_TURNLEFT=7;
+    public static final int OPCODE_TURNRIGHT=8;
 
-    public static final double[] STEP = {0.5,5,0,0,0,0,500};
     private static int _active = 0;
 
 

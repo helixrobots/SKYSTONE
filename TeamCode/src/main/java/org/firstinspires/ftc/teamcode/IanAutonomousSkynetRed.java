@@ -10,7 +10,9 @@ import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_CLOSECLAW;
 import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_MOVE;
 import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_OPENCLAW;
 import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_PAUSE;
-import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURN;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_HEAD;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNLEFT;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNRIGHT;
 
 
 @Autonomous(name="Ian Autonomous Skynet Red", group="Helix")
@@ -36,8 +38,16 @@ public class IanAutonomousSkynetRed extends IanAutonomousBase {
                     move(instruction.parameter);
                     break;
                 }
-                case OPCODE_TURN: {
-                    turn (instruction.parameter);
+                case OPCODE_TURNLEFT: {
+                    turnLeft(instruction.parameter);
+                    break;
+                }
+                case OPCODE_TURNRIGHT: {
+                    turnRight(instruction.parameter);
+                    break;
+                }
+                case OPCODE_HEAD: {
+                    head(instruction.parameter);
                     break;
                 }
                 case OPCODE_OPENCLAW: {
