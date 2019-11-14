@@ -13,6 +13,12 @@ public class SkynetT1 extends IanAutonomousBase {
     }
 
     @Override
+    public void runOpMode() throws InterruptedException {
+        // Just load the calibration data
+        CalibrationStore.load();
+    }
+
+    @Override
     protected boolean isSkynetActive() {
         // Pretend we are active so that we can control it interactively
         return true;

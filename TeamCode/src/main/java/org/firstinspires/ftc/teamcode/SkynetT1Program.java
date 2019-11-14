@@ -7,7 +7,7 @@ public class SkynetT1Program extends Program {
 
     int heading = 0;
 
-    SkynetT1 t1;
+    SkynetT1 t1=null;
 
     private static final double TURN_STEP=5;
     private static final double MOVE_STEP=5 ;
@@ -55,6 +55,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_HEAD);
                 }
                 heading += TURN_STEP;
+                if (heading>ProgramStore.MAX_ANGLE) {
+                    heading=(int)(ProgramStore.MAX_ANGLE);
+                }
                 ProgramStore.setParameter(program, pc, heading);
                 t1.head(heading);
             }
@@ -82,6 +85,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_HEAD);
                 }
                 heading -= TURN_STEP;
+                if (heading<ProgramStore.MIN_ANGLE) {
+                    heading = (int)ProgramStore.MIN_ANGLE;
+                }
                 ProgramStore.setParameter(program, pc, heading);
                 t1.head(heading);
             }
@@ -101,6 +107,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNRIGHT);
                 }
                 parameter -= MOVE_STEP;
+                if (parameter<ProgramStore.MIN_ANGLE) {
+                    parameter = (int)ProgramStore.MIN_ANGLE;
+                }
                 ProgramStore.setParameter(program, pc, parameter);
                 t1.turnRight(-MOVE_STEP);
             }
@@ -117,6 +126,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNLEFT);
                 }
                 parameter += MOVE_STEP;
+                if (parameter>ProgramStore.MAX_ANGLE) {
+                    parameter = ProgramStore.MAX_ANGLE;
+                }
                 ProgramStore.setParameter(program, pc, parameter);
                 t1.turnLeft(MOVE_STEP);
 
@@ -134,6 +146,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNLEFT);
                 }
                 parameter -= MOVE_STEP;
+                if (parameter<ProgramStore.MIN_ANGLE) {
+                    parameter = (int)ProgramStore.MIN_ANGLE;
+                }
                 ProgramStore.setParameter(program, pc, parameter);
                 t1.turnLeft(-MOVE_STEP);
             }
@@ -150,6 +165,9 @@ public class SkynetT1Program extends Program {
                     ProgramStore.setOpCode(program, pc, ProgramStore.OPCODE_TURNRIGHT);
                 }
                 parameter += MOVE_STEP;
+                if (parameter>ProgramStore.MAX_ANGLE) {
+                    parameter = ProgramStore.MAX_ANGLE;
+                }
                 ProgramStore.setParameter(program, pc, parameter);
                 t1.turnRight(MOVE_STEP);
             }

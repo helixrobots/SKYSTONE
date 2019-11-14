@@ -31,6 +31,9 @@ public class ProgramStore {
     public static final int OPCODE_TURNLEFT=7;
     public static final int OPCODE_TURNRIGHT=8;
 
+    public static final double MAX_ANGLE=180;
+    public static final double MIN_ANGLE=-180;
+
     private static int _active = 0;
 
 
