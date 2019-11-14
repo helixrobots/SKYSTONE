@@ -25,6 +25,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
     private static final double ANGLE_TOLERANCE = 3.0;
     public static final int STABILITY_THRESHOLD = 500;
     public static final int MEASURE_THRESHOLD = 10;
+    private static final double NO_ANGLE=-360;
 
     // Arm servos
     private Servo armServoBase = null;
@@ -266,10 +267,6 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 //        return new PID(1,0,0,0,-0.3,-.5,0.3,.5,30);
     }
 
-    private double normalizeAngle(double angle){
-
-        return (angle + 540.0) % 360.0 - 180.0;
-    }
     public void head(double desiredHeading) {
 
         if (desiredHeading>180 || desiredHeading<-180) {
@@ -396,12 +393,97 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         gripper.setPosition(1);
     }
 
-    public void turnLeft(double distance) {
-        encoderDrive(DRIVE_SPEED,DRIVE_SPEED/3,distance,distance/3,0.5+Math.abs(distance)/15);
+
+    public void turn(double degrees, boolean direction, double wheelRatio) {
+
+        if (degrees>180 || degrees<-180) {
+            throw new RuntimeException("I can only head from -180 to 180 degrees");
+        }
+
+        // Start the logging of measured acceleration
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+
+        // With arm
+        PID rotationPID = createPID();
+
+        rotationPID.reset();
+
+        long stableSince = System.currentTimeMillis();
+
+        boolean flipToPositive=false;
+        boolean flipToNegative=false;
+
+        double initialHeading = NO_ANGLE;
+        // Loop and update the dashboard
+        do  {
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            gravity  = imu.getGravity();
+            double adjustedAngle = angles.firstAngle;
+
+
+            if (!flipToNegative && adjustedAngle>90) {
+                flipToPositive = true;
+            }
+
+            if (!flipToPositive && adjustedAngle<-90) {
+                flipToNegative = true;
+            }
+
+            if (adjustedAngle>0 && adjustedAngle<90) {
+                flipToPositive = false;
+            }
+
+            if (adjustedAngle<0 && adjustedAngle>-90) {
+                flipToNegative = false;
+            }
+
+            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+
+            if (initialHeading == NO_ANGLE) {
+                initialHeading = adjustedAngle;
+                if (!direction) {
+                    degrees=-degrees;
+                }
+            }
+
+            double degreesTraveled = adjustedAngle - initialHeading;
+
+
+
+            double distance = rotationPID.calculate(degrees,degreesTraveled);
+            telemetry.addData("Initial Heading",  "%f", initialHeading);
+            telemetry.addData("Adjusted Heading",  "%f", adjustedAngle);
+            telemetry.addData("Desired Degrees",  "%f", degrees);
+            telemetry.addData("Degrees Traveled",  "%f", degreesTraveled);
+            telemetry.addData("Distance/Power",  "%f", distance);
+            telemetry.update();
+
+            if (direction) {
+                robot.leftDrive.setPower(distance);
+                robot.rightDrive.setPower(distance / wheelRatio);
+            } else {
+                robot.leftDrive.setPower(-distance/wheelRatio);
+                robot.rightDrive.setPower(-distance);
+
+            }
+
+            // If we are farther than 3 degrees, then reset the time
+            if ((Math.abs(degrees - degreesTraveled) > ANGLE_TOLERANCE)) {
+                stableSince = System.currentTimeMillis();
+            } else {
+                robot.leftDrive.setPower(0);
+                robot.rightDrive.setPower(0);
+            }
+
+        } while ((System.currentTimeMillis()-stableSince)< STABILITY_THRESHOLD);
     }
 
-    public void turnRight(double distance) {
-        encoderDrive(DRIVE_SPEED/3,DRIVE_SPEED,distance/3,distance,0.5+Math.abs(distance)/15);
+    public void turnLeft(double degrees) {
+        turn(degrees,true,3);
+    }
+
+    public void turnRight(double degrees) {
+        turn(degrees,false,3);
     }
 
     public abstract void execute();

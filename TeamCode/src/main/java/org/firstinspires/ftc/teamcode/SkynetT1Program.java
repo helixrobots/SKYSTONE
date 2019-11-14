@@ -10,7 +10,7 @@ public class SkynetT1Program extends Program {
     SkynetT1 t1;
 
     private static final double TURN_STEP=5;
-    private static final double MOVE_STEP=5;
+    private static final double MOVE_STEP=5 ;
 
 
     @Override
