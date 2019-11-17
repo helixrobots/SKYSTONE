@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package com.helix.common;
 
 /**
  * This code implements a simple PID algorithm
@@ -29,11 +29,11 @@ public class PID {
 
     private double previousError=0;
 
-    private long elapsed;
-
     private long lastTime = -1;
 
     private double maxDelta = 0;
+
+    public double previousOutput = 0;
 
     /**
      *
@@ -73,11 +73,16 @@ public class PID {
             lastTime = now;
         }
 
-        elapsed = now-lastTime;
+        double elapsedSeconds = ((double)now-(double)lastTime)/1000.0;
 
         error =desired-current;
-        integral = integral + (error*elapsed);
-        derivative = (error-previousError)/elapsed;
+        integral = integral + (error* elapsedSeconds);
+        //  Prevent division by zero
+        if (elapsedSeconds ==0) {
+            derivative = 0;
+        } else {
+            derivative = (error - previousError) / elapsedSeconds;
+        }
 
         previousError = error;
         lastTime = now;
@@ -85,6 +90,8 @@ public class PID {
         double output = Kp*error + Ki*integral + Kd*derivative + bias;
 
         double throttle = output;
+
+//        System.out.println("throttle = " + throttle);
 
         if (throttle>maxDelta) {
             throttle = maxDelta;
@@ -104,6 +111,8 @@ public class PID {
         } else if (throttle<0 && throttle>minReversePower) {
             throttle = minReversePower;
         }
+
+        previousOutput = output;
 
         return throttle;
 
