@@ -14,6 +14,7 @@ public class PIDTunner extends JPanel implements Runnable {
 
     private static final int POINT_RADIUS = 5;
     private Object _syncObject = new Object();
+    private double _currentPower = 0;
 
     private class Point {
         int x;
@@ -55,7 +56,7 @@ public class PIDTunner extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        PID pid = new PID(1,0,0,0,-0.1,-1,0.1,1,30);
+        PID pid = new PID(0.1,0.05,0.1,0,-0.1,-1,0.1,1,100);
         pid.reset();
 
         double desired = 100;
@@ -65,7 +66,7 @@ public class PIDTunner extends JPanel implements Runnable {
         do {
             double output = pid.calculate(100,_current);
             current += applyPower(output);
-            System.out.println(String.format("PID output=%.2f \toutput=%.2f \tcurrent=%.2f",pid.previousOutput,output,current));
+            System.out.println(String.format("PID output=%.2f \toutput=%.2f \tcurrent=%.2f\tcurrentPower=%.2f",pid.previousOutput,output,current, _currentPower));
             // If we are farther than 3 degrees, then reset the time
 
 
@@ -94,8 +95,16 @@ public class PIDTunner extends JPanel implements Runnable {
     }
 
     private double applyPower(double output) {
-        // Assume that the robot gets to the requested output instantaneously for this simulation
-        return output;
+
+//        if (_currentPower < output) {
+//            _currentPower +=0.05;
+//        } else if (_currentPower > output) {
+//            _currentPower -=0.05;
+//        }
+        // Assume immediate response
+        _currentPower = output;
+
+        return _currentPower;
 
     }
 
