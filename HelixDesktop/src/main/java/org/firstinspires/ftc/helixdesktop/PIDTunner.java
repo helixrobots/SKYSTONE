@@ -37,6 +37,7 @@ public class PIDTunner extends JPanel implements Runnable {
 
     private List<Point> _points = new ArrayList();
     private List<Point> _outputs = new ArrayList();
+    private List<Point> _powers = new ArrayList();
 
     public static void main(String[] args) {
         JFrame f=new JFrame();
@@ -56,7 +57,7 @@ public class PIDTunner extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        PID pid = new PID(0.1,0.05,0.1,0,-0.1,-1,0.1,1,100);
+        PID pid = new PID(1,0,0,0,-0.1,-1,0.1,1,100);
         pid.reset();
 
         double desired = 100;
@@ -96,13 +97,13 @@ public class PIDTunner extends JPanel implements Runnable {
 
     private double applyPower(double output) {
 
-//        if (_currentPower < output) {
-//            _currentPower +=0.05;
-//        } else if (_currentPower > output) {
-//            _currentPower -=0.05;
-//        }
+        if (_currentPower < output) {
+            _currentPower +=0.025;
+        } else if (_currentPower > output) {
+            _currentPower -=0.025;
+        }
         // Assume immediate response
-        _currentPower = output;
+//        _currentPower = output;
 
         return _currentPower;
 
@@ -121,9 +122,16 @@ public class PIDTunner extends JPanel implements Runnable {
             graphics.setColor(Color.BLUE);
             graphics.drawLine(0, 200 - (int) _desired, 640, 200 - (int) _desired);
             graphics.setColor(Color.GRAY);
+            graphics.drawLine(0, 300, 640, 300);
+            graphics.setColor(Color.GRAY);
             graphics.drawLine(0, 400, 640, 400);
             graphics.setColor(Color.BLACK);
-            Point np = new Point((int) elapsed, 400 - (int) (_output * 70.0));
+            Point np = new Point((int) elapsed, 300 - (int) (_currentPower * 70.0));
+            _powers.add(np);
+            for (Point p : _powers) {
+                graphics.fillOval(p.x, p.y, POINT_RADIUS, 2);
+            }
+            np = new Point((int) elapsed, 400 - (int) (_output * 70.0));
             _outputs.add(np);
             for (Point p : _outputs) {
                 graphics.fillOval(p.x, p.y, POINT_RADIUS, 2);
