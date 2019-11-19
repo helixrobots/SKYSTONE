@@ -28,7 +28,7 @@ public class Program extends OpMode {
     @Override
     public void loop() {
         if (gamepad1.right_bumper) {
-            saved=ProgramStore.save();
+            saved = persist();
         }
         if(dpadLeftBumper()){
             program++;
@@ -155,6 +155,10 @@ public class Program extends OpMode {
             timeout--;
         }
 
+    }
+
+    protected boolean persist() {
+        return ProgramStore.save();
     }
 
     protected boolean dpadB() {

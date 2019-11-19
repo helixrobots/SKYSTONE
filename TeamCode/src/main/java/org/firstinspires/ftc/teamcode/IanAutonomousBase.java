@@ -19,6 +19,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import java.util.Locale;
 
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_BOX;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_BRIDGE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_CLOSECLAW;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_HEAD;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_MOVE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_OPENCLAW;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_PAUSE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNLEFT;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNRIGHT;
+
 
 public abstract class IanAutonomousBase extends LinearOpMode {
 
@@ -488,4 +498,47 @@ public abstract class IanAutonomousBase extends LinearOpMode {
     }
 
     public abstract void execute();
+
+    public void execute(ProgramStore.Instruction instruction) {
+        switch (instruction.opCode) {
+            case OPCODE_MOVE: {
+                move(instruction.parameter);
+                break;
+            }
+            case OPCODE_TURNLEFT: {
+                turnLeft(instruction.parameter);
+                break;
+            }
+            case OPCODE_TURNRIGHT: {
+                turnRight(instruction.parameter);
+                break;
+            }
+            case OPCODE_HEAD: {
+                head(instruction.parameter);
+                break;
+            }
+            case OPCODE_OPENCLAW: {
+                openClaw();
+                break;
+            }
+            case OPCODE_CLOSECLAW: {
+                closeClaw();
+                break;
+            }
+            case OPCODE_BOX: {
+                moveToBoxPosition();
+                break;
+            }
+            case OPCODE_BRIDGE: {
+                moveToBridgePosition();
+                break;
+            }
+            case OPCODE_PAUSE: {
+                sleep((int)instruction.parameter);
+                break;
+            }
+
+        }
+
+    }
 }

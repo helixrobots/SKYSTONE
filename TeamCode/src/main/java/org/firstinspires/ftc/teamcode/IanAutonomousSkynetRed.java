@@ -32,48 +32,11 @@ public class IanAutonomousSkynetRed extends IanAutonomousBase {
         List<ProgramStore.Instruction> instructions = ProgramStore.getActiveProgram();
 
         for (ProgramStore.Instruction instruction : instructions) {
-//            public static final String[] OPERATIONS = {"MOVE","TURN","OPENCLAW","CLOSECLAW","BOX","BRIDGE","PAUSE"};
-            switch (instruction.opCode) {
-                case OPCODE_MOVE: {
-                    move(instruction.parameter);
-                    break;
-                }
-                case OPCODE_TURNLEFT: {
-                    turnLeft(instruction.parameter);
-                    break;
-                }
-                case OPCODE_TURNRIGHT: {
-                    turnRight(instruction.parameter);
-                    break;
-                }
-                case OPCODE_HEAD: {
-                    head(instruction.parameter);
-                    break;
-                }
-                case OPCODE_OPENCLAW: {
-                    openClaw();
-                    break;
-                }
-                case OPCODE_CLOSECLAW: {
-                    closeClaw();
-                    break;
-                }
-                case OPCODE_BOX: {
-                    moveToBoxPosition();
-                    break;
-                }
-                case OPCODE_BRIDGE: {
-                    moveToBridgePosition();
-                    break;
-                }
-                case OPCODE_PAUSE: {
-                    sleep((int)instruction.parameter);
-                    break;
-                }
 
-            }
+            execute(instruction);
+
         }
 
-
     }
+
 }
