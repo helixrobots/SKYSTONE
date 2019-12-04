@@ -31,7 +31,6 @@ public class AshrayBasicOpMode_Iterative extends OpMode {
     private Servo rightClaw = null;
     double leftPower;
     double rightPower;
-    final String ARM_CODE_PICK_UP = "pick up";
     final String ARM_CODE_HOLDING = "hold";
     final String ARM_CODE_REST = "rest";
     // These two states may be redundant (they may be the same as the PICK_UP and HOLDING settings
