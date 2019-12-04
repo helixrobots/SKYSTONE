@@ -1,2 +1,2 @@
-include ':FtcRobotController'
+include ':FtcRobotController', ':HelixDesktop', ':HelixCommon'
 include ':TeamCode'

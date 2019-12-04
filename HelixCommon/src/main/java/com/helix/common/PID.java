@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package com.helix.common;
 
 /**
  * This code implements a simple PID algorithm
@@ -29,11 +29,11 @@ public class PID {
 
     private double previousError=0;
 
-    private long elapsed;
-
     private long lastTime = -1;
 
     private double maxDelta = 0;
+
+    public double previousOutput = 0;
 
     /**
      *
@@ -41,10 +41,10 @@ public class PID {
      * @param ki The Integral Constant
      * @param kd The Derivative Constant
      * @param bias This can be set to a very low value or even zero? (0.001?)
-     * @param minReversePower The Min power that will make the motor turn in reverse
-     * @param maxReversePower The Max power that will make the motor turn in reverse the fastest
-     * @param minForwardPower Tee Min power that will make the motor turn forward
-     * @param maxForwardPower The Max power that will make the robot turn forward the fastest
+     * @param minReversePower The Min power that will make the motor head in reverse
+     * @param maxReversePower The Max power that will make the motor head in reverse the fastest
+     * @param minForwardPower Tee Min power that will make the motor head forward
+     * @param maxForwardPower The Max power that will make the robot head forward the fastest
      * @param maxDelta The max delta between the error and the target (if the difference between the target and error is more than this delta, max power will be used)
      */
     public PID(double kp, double ki, double kd, double bias, double minReversePower, double maxReversePower, double minForwardPower, double maxForwardPower, double maxDelta) {
@@ -73,11 +73,16 @@ public class PID {
             lastTime = now;
         }
 
-        elapsed = now-lastTime;
+        double elapsedSeconds = ((double)now-(double)lastTime)/1000.0;
 
         error =desired-current;
-        integral = integral + (error*elapsed);
-        derivative = (error-previousError)/elapsed;
+        integral = integral + (error* elapsedSeconds);
+        //  Prevent division by zero
+        if (elapsedSeconds ==0) {
+            derivative = 0;
+        } else {
+            derivative = (error - previousError) / elapsedSeconds;
+        }
 
         previousError = error;
         lastTime = now;
@@ -85,6 +90,8 @@ public class PID {
         double output = Kp*error + Ki*integral + Kd*derivative + bias;
 
         double throttle = output;
+
+//        System.out.println("throttle = " + throttle);
 
         if (throttle>maxDelta) {
             throttle = maxDelta;
@@ -104,6 +111,8 @@ public class PID {
         } else if (throttle<0 && throttle>minReversePower) {
             throttle = minReversePower;
         }
+
+        previousOutput = output;
 
         return throttle;
 

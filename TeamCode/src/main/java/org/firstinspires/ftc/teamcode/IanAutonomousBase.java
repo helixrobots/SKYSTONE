@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.helix.common.PID;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -19,12 +19,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import java.util.Locale;
 
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_BOX;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_BRIDGE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_CLOSECLAW;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_HEAD;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_MOVE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_OPENCLAW;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_PAUSE;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNLEFT;
+import static org.firstinspires.ftc.teamcode.ProgramStore.OPCODE_TURNRIGHT;
+
 
 public abstract class IanAutonomousBase extends LinearOpMode {
 
     private static final double ANGLE_TOLERANCE = 3.0;
     public static final int STABILITY_THRESHOLD = 500;
     public static final int MEASURE_THRESHOLD = 10;
+    private static final double NO_ANGLE=-360;
+
 
     // Arm servos
     private Servo armServoBase = null;
@@ -90,9 +102,9 @@ public abstract class IanAutonomousBase extends LinearOpMode {
          */
         robot.init(hardwareMap);
 
-        // Send telemetry message to signify robot waiting;
-        telemetry.addData("Status", "Resetting Encoders");    //
-        telemetry.update();
+//        // Send telemetry message to signify robot waiting;
+//        telemetry.addData("Status", "Resetting Encoders");    //
+//        telemetry.update();
 
         robot.leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -100,11 +112,11 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // Send telemetry message to indicate successful Encoder reset
-        telemetry.addData("Path0",  "Starting at %7d :%7d",
-                robot.leftDrive.getCurrentPosition(),
-                robot.rightDrive.getCurrentPosition());
-        telemetry.update();
+//        // Send telemetry message to indicate successful Encoder reset
+//        telemetry.addData("Path0",  "Starting at %7d :%7d",
+//                robot.leftDrive.getCurrentPosition(),
+//                robot.rightDrive.getCurrentPosition());
+//        telemetry.update();
     }
 
 
@@ -194,17 +206,17 @@ public abstract class IanAutonomousBase extends LinearOpMode {
      */
 
     public void move(double distance){
-        encoderDrive(DRIVE_SPEED, distance, distance, 1+Math.abs(distance)/15);
+        encoderDrive(DRIVE_SPEED, DRIVE_SPEED, distance, distance, 0.5+Math.abs(distance)/15);
     }
 
-    public void encoderDrive(double speed,
+    public void encoderDrive(double leftSpeed,double rightSpeed,
                              double leftInches, double rightInches,
                              double timeoutS) {
         int newLeftTarget;
         int newRightTarget;
 
         // Ensure that the opmode is still active
-        if (opModeIsActive()) {
+        if (isSkynetActive()) {
 
             // Determine new target position, and pass to motor controller
             newLeftTarget = robot.leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
@@ -218,8 +230,8 @@ public abstract class IanAutonomousBase extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.leftDrive.setPower(Math.abs(speed));
-            robot.rightDrive.setPower(Math.abs(speed));
+            robot.leftDrive.setPower(Math.abs(leftSpeed));
+            robot.rightDrive.setPower(Math.abs(rightSpeed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -227,7 +239,7 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() &&
+            while (isSkynetActive() &&
                     (runtime.seconds() < timeoutS) &&
                     (robot.leftDrive.isBusy() && robot.rightDrive.isBusy())) {
 
@@ -251,24 +263,25 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         }
     }
 
+    protected boolean isSkynetActive() {
+        return opModeIsActive();
+    }
+
     public abstract int getSetting();
 
     public PID createPID() {
         int setting=getSetting();
-//        return new PID(1,0,0,0,-0.3,-1,0.3,1,30);
         return new PID(1,0,0,0,CalibrationStore.items[setting][0],CalibrationStore.items[setting][1],CalibrationStore.items[setting][2],CalibrationStore.items[setting][3],CalibrationStore.items[setting][4]);
-        // Without arm
+//        With arm
+//        return new PID(1,0,0,0,-0.3,-1,0.3,1,30);
+//        Without arm
 //        return new PID(1,0,0,0,-0.3,-.5,0.3,.5,30);
     }
 
-    private double normalizeAngle(double angle){
-
-        return (angle + 540.0) % 360.0 - 180.0;
-    }
-    public void turn(double desiredHeading) {
+    public void head(double desiredHeading) {
 
         if (desiredHeading>180 || desiredHeading<-180) {
-            throw new RuntimeException("I can only turn from -180 to 180 degrees");
+            throw new RuntimeException("I can only head from -180 to 180 degrees");
         }
 
         // Start the logging of measured acceleration
@@ -291,30 +304,29 @@ public abstract class IanAutonomousBase extends LinearOpMode {
             double adjustedAngle = angles.firstAngle;
 
 
-            if (adjustedAngle>90) {
+            if (!flipToNegative && adjustedAngle>90) {
                 flipToPositive = true;
             }
 
-            if (adjustedAngle<-90) {
+            if (!flipToPositive && adjustedAngle<-90) {
                 flipToNegative = true;
             }
 
-            if (adjustedAngle<90) {
+            if (adjustedAngle>0 && adjustedAngle<90) {
                 flipToPositive = false;
             }
 
-            if (adjustedAngle>-90) {
+            if (adjustedAngle<0 && adjustedAngle>-90) {
                 flipToNegative = false;
             }
 
-            // THIS LINE CAN BE REMOVED IF ADJUSTING ANGLE SIGN CAUSES PROBLEMS
-//            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
-            adjustedAngle = normalizeAngle(adjustedAngle);
+            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+
             double distance = rotationPID.calculate(desiredHeading,(double)(adjustedAngle));
             telemetry.addData("Initial Heading",  "%f", desiredHeading);
             telemetry.addData("Current Heading",  "%f", angles.firstAngle);
-            telemetry.addData("Adjusted Heading",  "%f", adjustedAngle);
-            telemetry.addData("Distance",  "%f", distance);
+            telemetry.addData("Adjusted Heading",  "%f, %b , %b", adjustedAngle, flipToPositive, flipToNegative);
+            telemetry.addData("Distance/Power",  "%f", distance);
             telemetry.update();
 
             robot.leftDrive.setPower(distance);
@@ -371,14 +383,14 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         // Wait until we're told to go
         waitForStart();
 
-        moveToBridgePosition();
+//        moveToBridgePosition();
 
         execute();
 
 
     }
 
-    private void moveToBoxPosition() {
+    protected void moveToBoxPosition() {
         armServoBase.setPosition(0.9);
         armServoMiddle.setPosition(1.0);
         gripperServoBase.setPosition(0.35);
@@ -392,5 +404,141 @@ public abstract class IanAutonomousBase extends LinearOpMode {
         gripper.setPosition(1);
     }
 
+
+    public void turn(double degrees, boolean direction, double wheelRatio) {
+
+        if (degrees>180 || degrees<-180) {
+            throw new RuntimeException("I can only head from -180 to 180 degrees");
+        }
+
+        // Start the logging of measured acceleration
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+
+        // With arm
+        PID rotationPID = createPID();
+
+        rotationPID.reset();
+
+        long stableSince = System.currentTimeMillis();
+
+        boolean flipToPositive=false;
+        boolean flipToNegative=false;
+
+        double initialHeading = NO_ANGLE;
+        // Loop and update the dashboard
+        do  {
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            gravity  = imu.getGravity();
+            double adjustedAngle = angles.firstAngle;
+
+
+            if (!flipToNegative && adjustedAngle>90) {
+                flipToPositive = true;
+            }
+
+            if (!flipToPositive && adjustedAngle<-90) {
+                flipToNegative = true;
+            }
+
+            if (adjustedAngle>0 && adjustedAngle<90) {
+                flipToPositive = false;
+            }
+
+            if (adjustedAngle<0 && adjustedAngle>-90) {
+                flipToNegative = false;
+            }
+
+            adjustedAngle = getAdjustedAngle(flipToPositive, flipToNegative, adjustedAngle);
+
+            if (initialHeading == NO_ANGLE) {
+                initialHeading = adjustedAngle;
+                if (!direction) {
+                    degrees=-degrees;
+                }
+            }
+
+            double degreesTraveled = adjustedAngle - initialHeading;
+
+
+
+            double distance = rotationPID.calculate(degrees,degreesTraveled);
+            telemetry.addData("Initial Heading",  "%f", initialHeading);
+            telemetry.addData("Adjusted Heading",  "%f", adjustedAngle);
+            telemetry.addData("Desired Degrees",  "%f", degrees);
+            telemetry.addData("Degrees Traveled",  "%f", degreesTraveled);
+            telemetry.addData("Distance/Power",  "%f", distance);
+            telemetry.update();
+
+            if (direction) {
+                robot.leftDrive.setPower(distance);
+                robot.rightDrive.setPower(distance / wheelRatio);
+            } else {
+                robot.leftDrive.setPower(-distance/wheelRatio);
+                robot.rightDrive.setPower(-distance);
+
+            }
+
+            // If we are farther than 3 degrees, then reset the time
+            if ((Math.abs(degrees - degreesTraveled) > ANGLE_TOLERANCE)) {
+                stableSince = System.currentTimeMillis();
+            } else {
+                robot.leftDrive.setPower(0);
+                robot.rightDrive.setPower(0);
+            }
+
+        } while ((System.currentTimeMillis()-stableSince)< STABILITY_THRESHOLD);
+    }
+
+    public void turnLeft(double degrees) {
+        turn(degrees,true,3);
+    }
+
+    public void turnRight(double degrees) {
+        turn(degrees,false,3);
+    }
+
     public abstract void execute();
+
+    public void execute(ProgramStore.Instruction instruction) {
+        switch (instruction.opCode) {
+            case OPCODE_MOVE: {
+                move(instruction.parameter);
+                break;
+            }
+            case OPCODE_TURNLEFT: {
+                turnLeft(instruction.parameter);
+                break;
+            }
+            case OPCODE_TURNRIGHT: {
+                turnRight(instruction.parameter);
+                break;
+            }
+            case OPCODE_HEAD: {
+                head(instruction.parameter);
+                break;
+            }
+            case OPCODE_OPENCLAW: {
+                openClaw();
+                break;
+            }
+            case OPCODE_CLOSECLAW: {
+                closeClaw();
+                break;
+            }
+            case OPCODE_BOX: {
+                moveToBoxPosition();
+                break;
+            }
+            case OPCODE_BRIDGE: {
+                moveToBridgePosition();
+                break;
+            }
+            case OPCODE_PAUSE: {
+                sleep((int)instruction.parameter);
+                break;
+            }
+
+        }
+
+    }
 }
